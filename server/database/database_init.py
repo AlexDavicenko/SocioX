@@ -1,5 +1,5 @@
 from datetime import datetime
-from databaseQuery import DatabaseQuery
+from server.database.databaseQuery import DatabaseQuery
 
 #https://youtu.be/wJanjCfyhAk
 

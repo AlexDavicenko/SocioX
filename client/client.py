@@ -21,16 +21,16 @@ class Client():
         self.app = app
         self.name = name
 
-        self.PORT = 8080
-        self.HOST = "192.168.1.247"
+        self.PORT = 8000
+        self.HOST = "127.0.1.1"
         self.close = False
-        #self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #self.client.connect((self.HOST, self.PORT))
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client.connect((self.HOST, self.PORT))
 
 
     def start(self):
-        #Thread(target=self.user_input, args=()).start()
-        #Thread(target=self.server_messages, args=()).start()
+        Thread(target=self.user_input, args=()).start()
+        Thread(target=self.server_messages, args=()).start()
         pass
 
     def user_input(self):

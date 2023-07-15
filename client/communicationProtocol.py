@@ -15,17 +15,12 @@ def listen_for_bytes(connection: socket):
     while True:
         data = connection.recv(WORD_LENGTH)
         if new_transmission:
-            print("new msg len:",data[:WORD_LENGTH])
             data_length = int(data[:WORD_LENGTH])
             new_transmission = False
-        print(f"full message length: {data_length}")
 
         full_data += data
 
-        print(len(full_data))
 
         if len(full_data)-WORD_LENGTH == data_length:
-            print("full msg recvd")
-            print(full_data[WORD_LENGTH:])
             return full_data[WORD_LENGTH:]
 

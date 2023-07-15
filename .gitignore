@@ -3,3 +3,4 @@ client/client.log
 client/Layout.png
 server/__pycache__
 server/server.log
+server/database/mysqltest.py

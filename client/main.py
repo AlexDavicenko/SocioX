@@ -118,8 +118,8 @@ class MessageFrame(ctk.CTkFrame):
 
 if __name__ == "__main__":
     
-    #name = input("Name?")
-    name = "Alex "
+    name = input("Name?")
+    #name = "Alex "
     app = App(name)
     client = Client(app, name)
 

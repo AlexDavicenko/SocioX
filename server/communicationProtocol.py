@@ -14,15 +14,13 @@ def listen_for_bytes(connection: socket):
     new_transmission = True
     while True:
         data = connection.recv(WORD_LENGTH)
-
-        if not data:
-            continue
-
         if new_transmission:
+            #The int cast crashes often
             data_length = int(data[:WORD_LENGTH])
             new_transmission = False
 
         full_data += data
+
 
         if len(full_data)-WORD_LENGTH == data_length:
             return full_data[WORD_LENGTH:]

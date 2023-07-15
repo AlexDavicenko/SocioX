@@ -1,6 +1,8 @@
-from threading import Thread
 import logging
 import json
+
+from threading import Thread
+
 from communicationProtocol import send_bytes, listen_for_bytes
 
 class HandleClient():
@@ -10,6 +12,7 @@ class HandleClient():
         self.ip = ip
         self.port = port
         self.id = id
+        self.is_active = True
         
         self.session.client_ids.append(self.id)
         try:
@@ -19,31 +22,34 @@ class HandleClient():
         except ConnectionResetError:
             logging.info(f"[CONNECTION CRASH] {ip, port}")
             
-    
+
     
     def broadcast_thread(self):        
-        is_active = True
-        while is_active:
+        while self.is_active:
             try:
                 for msg in self.session.get_new_messages(self.id):
-                    print(msg)
+                    logging.info(f"Sending message to {self.id, (self.ip, self.port)}: [{msg.to_json()}]")
                     self.send_msg(msg)
             except (ConnectionRefusedError, ConnectionResetError):
+                logging.error(f"[CLIENT DISCONNECTED]: {self.ip, self.port}")
                 is_active = False
             
     def listen_thread(self):
-        is_active = True
-        while is_active:
+        while self.is_active:
             try:
                 #Check for type
                 msg = self.receive()
-                self.session.add_message(Message(self.id, msg['name'], msg['text'], msg['time']))
-
-                
+                logging.info(f"Recieved message from {self.id, (self.ip, self.port)}: [{msg}]")
+                self.session.add_message(Message(
+                    self.id, 
+                    msg['name'], 
+                    msg['text'], 
+                    msg['time']
+                    ))
 
 
             except (ConnectionResetError, ConnectionRefusedError):
-                logging.info(f"[CLIENT DISCONNECTED]: {self.ip, self.port}")
+                logging.error(f"[CLIENT DISCONNECTED]: {self.ip, self.port}")
                 is_active = False
 
     def send_msg(self, msg):
@@ -83,15 +89,12 @@ class Session:
         self.messages = {}
 
     def get_new_messages(self, client_id):
+        #Get all the messages for the specific client ID
         new_msgs = self.messages.get(client_id, [])
-
-        #for m in new_msgs:
-            #m.received_by.append(client_id)
         
+        #Clear all the messages that are about to be sent out
         self.messages[client_id] = []
-        if new_msgs:
-            for i in new_msgs:
-                print(i.to_json())
+        
         return new_msgs
         
     def add_message(self, msg):
