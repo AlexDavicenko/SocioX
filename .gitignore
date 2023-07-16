@@ -4,3 +4,5 @@ client/Layout.png
 server/__pycache__
 server/server.log
 server/database/mysqltest.py
+server/database/.mypy_cache
+server/database/__pycache__

@@ -1,10 +1,12 @@
-import socket
+
 import logging
 
-from handleClient import HandleClient, Session
+import socket
+from handleClient import HandleClient
+from session import Session
 
 class Server:
-    def __init__(self, port) -> None:
+    def __init__(self, port: int) -> None:
         self.threads = 0
         self.id_counter = 0
         self.session = Session()
@@ -17,7 +19,7 @@ class Server:
         self.server.bind((self.HOST, self.PORT))
         self.server.listen()
 
-    def start(self):
+    def start(self) -> None:
         while True:
             client, address = self.server.accept()
             ip, port = str(address[0]), str(address[1])
@@ -29,7 +31,7 @@ class Server:
   
 
 
-def main():
+def main() -> None:
 
     logging.basicConfig(
         level=logging.INFO,

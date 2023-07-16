@@ -86,7 +86,7 @@ class DatabaseQuery:
         self.execute_query(query, channel_id, sender_id, content, date, time)
 
 
-    def add_user_channel_connection(self, channel_id: int, user_id: id ):
+    def add_user_channel_connection(self, channel_id: int, user_id: int ):
         
         date, time = self.get_datetime()
 

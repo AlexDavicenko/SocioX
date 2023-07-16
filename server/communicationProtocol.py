@@ -2,13 +2,13 @@ from socket import socket
 
 WORD_LENGTH = 64
 
-def send_bytes(connection: socket, data: bytes):
+def send_bytes(connection: socket, data: bytes) -> None:
     header = str(f"{len(data):<{WORD_LENGTH}}").encode()
     
     connection.send(header)
     connection.send(data)
 
-def listen_for_bytes(connection: socket):
+def listen_for_bytes(connection: socket) -> bytes:
     full_data = b""
     
     new_transmission = True
