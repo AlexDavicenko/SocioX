@@ -6,3 +6,5 @@ server/server.log
 server/database/mysqltest.py
 server/database/.mypy_cache
 server/database/__pycache__
+bcrypt/
+protocol/

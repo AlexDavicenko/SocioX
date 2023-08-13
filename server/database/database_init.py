@@ -4,10 +4,6 @@ from server.database.databaseQuery import DatabaseQuery
 #https://youtu.be/wJanjCfyhAk
 
 
-
-
-
-
 if __name__ == '__main__':
     with DatabaseQuery(r"database.db") as dbq:
 
