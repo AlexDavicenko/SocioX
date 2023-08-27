@@ -5,7 +5,7 @@ import sys
 from datetime import datetime
 import time
 from threading import Thread
-from communicationProtocol import send_bytes, listen_for_bytes
+from ..communication_protocol.communicationProtocol import send_bytes, listen_for_bytes
 
 
 logging.basicConfig(

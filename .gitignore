@@ -8,3 +8,9 @@ server/database/.mypy_cache
 server/database/__pycache__
 bcrypt/
 protocol/
+client/email_verification/credentials.json
+client/email_verification/token.json
+.mypy_cache
+client.log
+client/email_verification
+client/windows/__pycache__

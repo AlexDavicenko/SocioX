@@ -4,7 +4,7 @@ import copy
 import time
 from threading import Thread
 from typing import List, Dict, Any
-from communicationProtocol import send_bytes, listen_for_bytes
+from ..communication_protocol.communicationProtocol import send_bytes, listen_for_bytes
 from socket import socket
 from session import Session, Message
 
