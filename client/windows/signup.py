@@ -1,7 +1,7 @@
 import tkinter as tk
 import customtkinter as ctk
 
-from windows.controller_protocol import Controller
+from controller_protocol import Controller
 from windows.window import Window
 from windows.widgets import PlaceHolderEntry
 

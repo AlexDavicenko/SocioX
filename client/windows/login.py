@@ -6,7 +6,7 @@ from threading import Thread
 from datetime import datetime
 from windows.widgets import PlaceHolderEntry
 from windows.window import Window
-from windows.controller_protocol import Controller
+from controller_protocol import Controller
 
 #https://github.com/mydraft-cc/ui
 
@@ -28,7 +28,10 @@ class LoginWindow(Window):
         
 
     def login_button_clicked(self) -> None:
-        pass
+        
+        #verif pass
+        self.controller.switch_frame('CoreAppEntryPointWindow')
+
 
     def show_password_button_clicked(self) -> None:
 

@@ -1,6 +1,12 @@
 import copy
 from typing import List, Dict, Any
 
+
+import sys
+sys.path.append('../')
+from communication_protocol.messagesTCP import *
+sys.path.append('client/')
+
 class Message:
     def __init__(self, sender_id: int, name: str, text: str, time: str) -> None:
         
@@ -27,9 +33,9 @@ class Session:
         #Client ID: List[Message Object]
         self.messages: Dict[int, List[Message]]= {}
 
-    def get_new_messages(self, client_id: int) -> List[Message]:
+    def get_new_messages(self, client_id: int) -> List[TCPMessage]:
         #Get all the messages for the specific client ID
-        new_msgs: List[Message] = self.messages.get(client_id, [])
+        new_msgs: List[TCPMessage] = self.messages.get(client_id, [])
         
         
         if new_msgs:    
@@ -40,12 +46,19 @@ class Session:
 
         return new_msgs
         
-    def add_message(self, msg: Message) -> None:
+    def add_message(self, msg: ClientMessage) -> None:
         #impl database call
-
-        for client_id in self.client_ids:
-            if client_id != msg.sender_id:
-                new_msgs = self.messages.get(client_id, []) + [copy.deepcopy(msg)]
-                self.messages[client_id] = new_msgs
-                #logging.info(f"Message added to stack for ID: {client_id} Current Message Stack: {self.messages}")
+        
+        if isinstance(msg, TextMessage):
+                        
+            for client_id in self.client_ids:
+                #Determine who needs to be notified about the message
+                if client_id != msg.client_id:
+                    new_msgs = self.messages.get(client_id, []) + [NewMessageNotif(
+                        msg.channel_id,
+                        channel_id = 0,
+                        text= msg.text
+                    )]
+                    self.messages[client_id] = new_msgs
+                    #logging.info(f"Message added to stack for ID: {client_id} Current Message Stack: {self.messages}")
 

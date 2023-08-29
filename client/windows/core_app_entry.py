@@ -1,18 +1,18 @@
 import tkinter as tk
 import customtkinter as ctk
-from client import Client
-from threading import Thread
 from datetime import datetime
 
+from controller_protocol import Controller
+from .window import Window
 
-class App(ctk.CTk):
-    def __init__(self, name):
-        super().__init__()
+class CoreAppEntryPointWindow(Window):
+    def __init__(self, parent: ctk.CTkFrame, controller: Controller):
+        super().__init__(parent)
 
-        self.init_window()
-        self.name = name
+        self.controller = controller
+
+        self.name = 'asd'
         self.messageBoxText = tk.StringVar()
-        self.messages_to_send = []
 
         self.channel_frame = ChannelBoxFrame(self)
         self.channel_frame.grid(row=0, column=0, padx=5, pady=1, sticky="ns")#rowspan = 2
@@ -29,22 +29,17 @@ class App(ctk.CTk):
         self.bind('<Return>', self.send_button_clicked)
         
     def send_button_clicked(self, e = None):
-        text = self.messageBoxText.get()
-        if text:
-            self.messages_to_send.append(text)
+        message_text = self.messageBoxText.get()
+        if message_text:
 
+            self.controller.add_outgoing_msg(message_text)
             self.message_box_frame.add_message(
-                name,
+                self.name,
                 datetime.now().strftime('%H:%M:%S'),
-                text
+                message_text
                 )
         self.messageBoxText.set("")
 
-
-    def init_window(self):
-        ctk.set_appearance_mode("dark")
-        self.title('Client Interface')
-        self.geometry('1280x720')
 
 class TextBarFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -115,13 +110,3 @@ class MessageFrame(ctk.CTkFrame):
         self.textLabel.pack(side= tk.LEFT, fill = tk.X, padx = 10, pady = (0,5), anchor = "w", expand = True)
         self.textLabel.bind('<Configure>', lambda e: self.textLabel.configure(wraplength=self.textLabel.winfo_width()))
 
-
-if __name__ == "__main__":
-    
-    name = input("Name?")
-    #name = "Alex "
-    app = App(name)
-    client = Client(app, name)
-
-    Thread(target=client.start, args=()).start()
-    app.mainloop()
