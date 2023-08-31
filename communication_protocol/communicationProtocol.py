@@ -12,10 +12,8 @@ def listen_for_bytes(connection: socket, close_event: Event = Event()) -> bytes:
     
     new_transmission = True
     while not close_event.is_set():
-        print("This goofy loop")
         data = connection.recv(WORD_LENGTH)
         if new_transmission:
-            #The int cast crashes often
             if data[:WORD_LENGTH]:
                 data_length = int(data[:WORD_LENGTH])
                 new_transmission = False

@@ -14,3 +14,7 @@ client/email_verification/token.json
 client.log
 client/email_verification
 client/windows/__pycache__
+client/local-cache.json
+client/.idea
+.idea
+communication_protocol/__pycache__

@@ -4,6 +4,8 @@ from datetime import datetime
 
 from controller_protocol import Controller
 from .window import Window
+from .window_types import *
+from typing import List, Dict
 
 class CoreAppEntryPointWindow(Window):
     def __init__(self, parent: ctk.CTkFrame, controller: Controller):
@@ -11,66 +13,117 @@ class CoreAppEntryPointWindow(Window):
 
         self.controller = controller
 
-        self.name = 'asd'
+        self.name = self.controller.client_username
+
+        #remove and fix later
         self.messageBoxText = tk.StringVar()
 
-        self.channel_frame = ChannelBoxFrame(self)
-        self.channel_frame.grid(row=0, column=0, padx=5, pady=1, sticky="ns")#rowspan = 2
+
+        self.side_channel_frame = SideChannelFrame(self, controller)
+        self.side_channel_frame.grid(row=0, column=0, padx=5, pady=1, sticky="ns")#rowspan = 2
         self.grid_rowconfigure(0, weight=1)
         
+        #ChannelId: ChannelFrame
+        self.channel_frames: Dict[int, ChannelFrame] = {}
 
-        self.message_box_frame = MessageBoxFrame(self)
-        self.message_box_frame.grid(row=0, column=1, padx=5, pady=1, sticky="nesw")
+        self.current_channel_frame: ChannelFrame = None
+        self.channel_frame_container = ctk.CTkFrame(self) 
+        self.channel_frame_container.grid(row=0, column=1, padx=5, pady=1, sticky="nesw")
         self.grid_columnconfigure(1, weight=1)
+
 
         self.text_bar_frame = TextBarFrame(self)
         self.text_bar_frame.grid(row=1,column=1, padx=10, pady=10, sticky="nesw")
 
         self.bind('<Return>', self.send_button_clicked)
-        
+    
+    
+
     def send_button_clicked(self, e = None):
         message_text = self.messageBoxText.get()
         if message_text:
 
-            self.controller.add_outgoing_msg(message_text)
-            self.message_box_frame.add_message(
+            self.controller.add_outgoing_text_msg(message_text)
+            self.current_channel_frame.add_message(
                 self.name,
                 datetime.now().strftime('%H:%M:%S'),
                 message_text
                 )
         self.messageBoxText.set("")
 
+    def add_channel_icon_to_side_bar(self, channel_id, channel_name):
+        
+        self.side_channel_frame.add_channel_button_to_side_bar(channel_id, channel_name)
 
+        channel_frame = ChannelFrame(self.channel_frame_container, channel_name)
+        self.channel_frames[channel_id] = channel_frame
+        #channel_frame.grid(row=0, column=1, padx=5, pady=1, sticky="nesw")
+
+
+    def switch_channel_frame(self, channel_id: int):
+        channel_frame = self.channel_frames[channel_id]
+        print('frame switch attempt')
+        print(self.channel_frames)
+
+        if self.current_channel_frame:
+            self.current_channel_frame.pack_forget()
+        channel_frame.pack(expand = True, fill = 'both')
+        self.current_channel_frame = channel_frame
+        channel_frame.tkraise()
+        #                frame.grid(row = 0, column = 0, sticky ="nsew")
+
+        
 class TextBarFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
 
-        self.message_box = ctk.CTkEntry(self, textvariable = master.messageBoxText)
-        self.message_box.pack(fill="both",expand=True, padx = 10, pady = 10,side=tk.LEFT)
+        self.message_entry_box = ctk.CTkEntry(self, textvariable = master.messageBoxText)
+        self.message_entry_box.pack(fill="both",expand=True, padx = 10, pady = 10,side=tk.LEFT)
         
         self.send_button = ctk.CTkButton(self, text = "Send", command = master.send_button_clicked)
-        self.send_button.pack(side=tk.RIGHT)
+        self.send_button.pack(side=tk.RIGHT, padx = 5)
 
 
-class ChannelBoxFrame(ctk.CTkScrollableFrame):
-    def __init__(self, master):
+class SideChannelFrame(ctk.CTkScrollableFrame):
+    def __init__(self, master, controller: Controller):
         super().__init__(master, width = 120, scrollbar_button_color = "#2B2B2B")
-        self.channels = []
+        self.controller = controller
+        self.channel_buttons: Dict[id,ChannelButton] = {}        
+
+        self.add_channel_button = ctk.CTkButton(self, text= 'Add Channel', command = self.add_channel_button_clicked)
+        self.add_channel_button.pack()
+
+    def add_channel_button_clicked(self, e = None):
+        self.controller.switch_frame(WindowTypes.AddChannelWindow)
+
+    def add_channel_button_to_side_bar(self, channel_id: int, channel_name: str):
+        btn = ChannelButton(self, self.controller, channel_id, channel_name)
+        self.channel_buttons[channel_id] = btn
+        btn.pack()
+    
+    
         
+    
 
-    def add_channel(self, msg):
-        #impl chanels
-        pass
+class ChannelButton(ctk.CTkButton):
+    def __init__(self, master, controller: Controller, channel_id: int, channel_name: str):
+        super().__init__(master, channel_id, command=self.switch_channel_button_clicked, text= channel_name)
+        self.controller = controller
+        self.channel_id = channel_id
+        self.channel_name = channel_name
 
+    def switch_channel_button_clicked(self, e = None):
+        print("Switch button clicked")
+        self.controller.switch_channel(self.channel_id)
 
-class MessageBoxFrame(ctk.CTkScrollableFrame):
-    def __init__(self, master):
-        super().__init__(master)
+class ChannelFrame(ctk.CTkScrollableFrame):
+    def __init__(self, master, channel_name):
+        super().__init__(master, fg_color=['gray86', 'gray17'])
         
-        head = ctk.CTkLabel(self, text = master.name)
+        head = ctk.CTkLabel(self, text = channel_name)
         head.pack(side= tk.TOP, expand = True, fill = tk.X)
 
-        self.messages = []
+        self.messages: List[MessageFrame] = []
         
         
     def add_message(self, username, time, text):

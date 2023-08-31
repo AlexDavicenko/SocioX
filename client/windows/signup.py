@@ -4,6 +4,7 @@ import customtkinter as ctk
 from controller_protocol import Controller
 from windows.window import Window
 from windows.widgets import PlaceHolderEntry
+from windows.window_types import WindowTypes
 
 class SignUpWindow(Window):
     password_shown = False
@@ -62,8 +63,8 @@ class SignUpWindow(Window):
         
     
     def back_button_clicked(self) -> None:
-        self.controller.switch_frame('LoginWindow')
+        self.controller.switch_frame(WindowTypes.LoginWindow)
 
         
     def signup_button_clicked(self) -> None:
-        self.controller.switch_frame('EmailVerificationWindow')
+        self.controller.switch_frame(WindowTypes.EmailVerificationWindow)

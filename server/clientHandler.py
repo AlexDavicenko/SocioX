@@ -11,7 +11,7 @@ from session import Session
 import sys
 sys.path.append('../')
 from communication_protocol.communicationProtocol import send_bytes, listen_for_bytes
-from communication_protocol.messagesTCP import *
+from communication_protocol.TCPMessages import *
 sys.path.append('client/')
 
 class ClientHandler():
@@ -40,9 +40,9 @@ class ClientHandler():
         while not self.close_event.is_set():
             try:
                 for msg in self.session.get_new_messages(self.id):
-                    if isinstance(msg, NewMessageNotif):
-                        logging.info(f"Sending message to {self.id, (self.ip, self.port)}: [{msg}]")
-                        self.send_msg(msg)
+                    logging.info(f"Sending message to {self.id, (self.ip, self.port)}: [{msg}]")
+                    self.send_msg(msg)
+                    
                     time.sleep(0.5)
 
             except (ConnectionRefusedError, ConnectionResetError):
@@ -52,25 +52,54 @@ class ClientHandler():
     def listen_thread(self) -> None:
         while not self.close_event.is_set():
             try:
-                #Check for type
                 msg = self.receive_msg()
                 logging.info(f"Recieved message from {self.id, (self.ip, self.port)}: [{msg}]")
 
-                if isinstance(msg, ClientMessage):
+
+                #Checking for type
+                if isinstance(msg, TextMessage):
                     msg.client_id = self.id
                     self.session.add_message(msg)
 
                 elif isinstance(msg, ConnectionClosed):
                     pass
 
+                elif isinstance(msg, LoginAttempt):
+                    self.session.add_message_by_id(self.id, LoginResponse(
+                        datetime.now(),
+                        0,
+                        True,
+                        self.id,
+                        msg.name
+                    ))
+                elif isinstance(msg, ChannelJoinRequest):
+                    self.session.add_message_by_id(self.id, ChannelAddResponse(
+                        datetime.now(),
+                        msg.client_id,
+                        True,
+                        msg.channel_id,
+                        self.session.channels[msg.channel_id]
+                    ))
+
+                elif isinstance(msg, ChannelCreateRequest):
+                    self.session.add_message_by_id(self.id, ChannelAddResponse(
+                        datetime.now(),
+                        msg.client_id,
+                        True,
+                        self.session.channel_id_counter,
+                        msg.channel_name
+                    ))
+                    self.session.channels[self.session.channel_id_counter] = msg.channel_name
+                    self.session.channel_id_counter += 1
+
             except (ConnectionResetError, ConnectionRefusedError, ConnectionAbortedError):
                 logging.error(f"[CLIENT DISCONNECTED]: {self.ip, self.port}")
                 self.close_event.set()
 
     def send_msg(self, msg: TCPMessage) -> None:
-        send_bytes(self. client, pickle.dumps(msg))
+        send_bytes(self.client, pickle.dumps(msg))
 
     def receive_msg(self) -> TCPMessage:
 
-        msg = pickle.loads(listen_for_bytes(self.client))
+        msg: TCPMessage = pickle.loads(listen_for_bytes(self.client))
         return msg

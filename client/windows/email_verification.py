@@ -6,6 +6,7 @@ import customtkinter as ctk
 from controller_protocol import Controller
 from windows.window import Window
 from windows.widgets import PlaceHolderEntry
+from windows.window_types import WindowTypes
 
 class EmailVerificationWindow(Window):
     def __init__(self, parent: ctk.CTkFrame, controller: Controller) -> None:
@@ -20,7 +21,7 @@ class EmailVerificationWindow(Window):
 
 
     def back_button_clicked(self) -> None:
-        self.controller.switch_frame('LoginWindow')
+        self.controller.switch_frame(WindowTypes.LoginWindow)
 
     def verify_code_button_clicked(self):
         
@@ -30,3 +31,14 @@ class EmailVerificationWindow(Window):
         
 
         #else reenter code
+
+
+
+
+
+
+
+
+
+
+        

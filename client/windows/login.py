@@ -7,6 +7,7 @@ from datetime import datetime
 from windows.widgets import PlaceHolderEntry
 from windows.window import Window
 from controller_protocol import Controller
+from windows.window_types import WindowTypes
 
 #https://github.com/mydraft-cc/ui
 
@@ -28,10 +29,14 @@ class LoginWindow(Window):
         
 
     def login_button_clicked(self) -> None:
-        
-        #verif pass
-        self.controller.switch_frame('CoreAppEntryPointWindow')
+        print(self.upper_frame.input_boxes_frame.username_entry_box.get())
+        self.controller.attempt_login(self.upper_frame.input_boxes_frame.username_entry_box.get())
 
+
+        #Show that pass is being verified
+
+
+    
 
     def show_password_button_clicked(self) -> None:
 
@@ -65,6 +70,8 @@ class LoginWindow(Window):
 
     def forgot_password_button_clicked(self) -> None:
         pass
+
+    
     def github_button_clicked(self) -> None:
         wb.open("https://github.com/AlexDavicenko/ChatApp")
     
