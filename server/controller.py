@@ -13,7 +13,7 @@ sys.path.append('client/')
 
 
 
-class Session:
+class Controller:
     def __init__(self) -> None:
 
         self.client_ids: List[int] = []

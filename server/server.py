@@ -6,12 +6,12 @@ from typing import List
 
 
 from clientHandler import ClientHandler
-from session import Session
+from controller import Controller
 
 class Server:
     def __init__(self, port: int) -> None:
         
-        self.session = Session()
+        self.controller = Controller()
         self.close_event = Event()
 
         self.threads = 0
@@ -42,7 +42,7 @@ class Server:
                 self.threads += 1
                 self.id_counter += 1
                 logging.info(f"[CLIENT CONNECTED] {ip,port}")
-                client = ClientHandler(client, self.session, ip, port, self.id_counter)
+                client = ClientHandler(client, self.controller, ip, port, self.id_counter)
                 self.current_clients.append(client)
             except socket.error as e:
                 print(e)

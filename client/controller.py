@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import tkinter as tk
 import logging
+
 from copy import copy
 from typing import Dict, List
 
@@ -16,7 +17,6 @@ from windows.signup import SignUpWindow
 from windows.email_verification import EmailVerificationWindow
 from windows.core_app_entry import CoreAppEntryPointWindow 
 from windows.add_channel import AddChannelWindow
-
 
 class Controller:
 
@@ -45,7 +45,7 @@ class Controller:
 
         #TODO: Solve with enums
         for FrameClass in (LoginWindow, SignUpWindow, EmailVerificationWindow, CoreAppEntryPointWindow, AddChannelWindow):
-  
+
             frame = FrameClass(self.root_container, self)
   
             self.frames[FrameClass.__name__] = frame

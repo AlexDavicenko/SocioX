@@ -5,7 +5,7 @@ import time
 from threading import Thread, Event
 from typing import List, Dict, Any
 from socket import socket
-from session import Session
+from controller import Controller
 
 #Specifying path to communication protocol directory
 import sys
@@ -15,14 +15,14 @@ from communication_protocol.TCPMessages import *
 sys.path.append('client/')
 
 class ClientHandler():
-    def __init__(self, client: socket, session: Session, ip: str, port: str, id: int) -> None:
+    def __init__(self, client: socket, controller: Controller, ip: str, port: str, id: int) -> None:
         self.client = client
-        self.session = session
+        self.controller = controller
         self.ip = ip
         self.port = port
         self.id = id
         self.close_event = Event()
-        self.session.client_ids.append(self.id)
+        self.controller.client_ids.append(self.id)
         try:
             Thread(target=self.broadcast_thread).start()
             Thread(target=self.listen_thread).start()
@@ -39,7 +39,7 @@ class ClientHandler():
     def broadcast_thread(self) -> None:        
         while not self.close_event.is_set():
             try:
-                for msg in self.session.get_new_messages(self.id):
+                for msg in self.controller.get_new_messages(self.id):
                     logging.info(f"Sending message to {self.id, (self.ip, self.port)}: [{msg}]")
                     self.send_msg(msg)
                     
@@ -59,13 +59,13 @@ class ClientHandler():
                 #Checking for type
                 if isinstance(msg, TextMessage):
                     msg.client_id = self.id
-                    self.session.add_message(msg)
+                    self.controller.add_message(msg)
 
                 elif isinstance(msg, ConnectionClosed):
                     pass
 
                 elif isinstance(msg, LoginAttempt):
-                    self.session.add_message_by_id(self.id, LoginResponse(
+                    self.controller.add_message_by_id(self.id, LoginResponse(
                         datetime.now(),
                         0,
                         True,
@@ -73,24 +73,24 @@ class ClientHandler():
                         msg.name
                     ))
                 elif isinstance(msg, ChannelJoinRequest):
-                    self.session.add_message_by_id(self.id, ChannelAddResponse(
+                    self.controller.add_message_by_id(self.id, ChannelAddResponse(
                         datetime.now(),
                         msg.client_id,
                         True,
                         msg.channel_id,
-                        self.session.channels[msg.channel_id]
+                        self.controller.channels[msg.channel_id]
                     ))
 
                 elif isinstance(msg, ChannelCreateRequest):
-                    self.session.add_message_by_id(self.id, ChannelAddResponse(
+                    self.controller.add_message_by_id(self.id, ChannelAddResponse(
                         datetime.now(),
                         msg.client_id,
                         True,
-                        self.session.channel_id_counter,
+                        self.controller.channel_id_counter,
                         msg.channel_name
                     ))
-                    self.session.channels[self.session.channel_id_counter] = msg.channel_name
-                    self.session.channel_id_counter += 1
+                    self.controller.channels[self.controller.channel_id_counter] = msg.channel_name
+                    self.controller.channel_id_counter += 1
 
             except (ConnectionResetError, ConnectionRefusedError, ConnectionAbortedError):
                 logging.error(f"[CLIENT DISCONNECTED]: {self.ip, self.port}")
