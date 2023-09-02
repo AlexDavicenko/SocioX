@@ -29,10 +29,6 @@ class Controller:
         self.outgoing_msgs = []
 
         self.root_container = ctk.CTkFrame(root) 
-        self.root_container.pack(side = "top", fill = "both", expand = True)
-    
-        self.root_container.grid_rowconfigure(0, weight = 1)
-        self.root_container.grid_columnconfigure(0, weight = 1)
         
         self._setup_frames()
 
@@ -42,7 +38,7 @@ class Controller:
         self.channel_frames: Dict[int, ctk.Frame] = {}
 
         self.frames: Dict[str, Window] = {} 
-
+        
         #TODO: Solve with enums
         for FrameClass in (LoginWindow, SignUpWindow, EmailVerificationWindow, CoreAppEntryPointWindow, AddChannelWindow):
 
@@ -51,8 +47,14 @@ class Controller:
             self.frames[FrameClass.__name__] = frame
   
             frame.grid(row = 0, column = 0, sticky ="nsew")
-
+        
         self.switch_frame(WindowTypes.LoginWindow)
+
+        self.root_container.pack(side = "top", fill = "both", expand = True)
+    
+        self.root_container.grid_rowconfigure(0, weight = 1)
+        self.root_container.grid_columnconfigure(0, weight = 1)
+        
     
     def switch_frame(self, frame_name: str) -> None:
         frame = self.frames[frame_name]

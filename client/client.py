@@ -78,6 +78,8 @@ class Client():
 
     
     def close(self):
+
+        exit(0)
         self.server_conn.close()
 
 
