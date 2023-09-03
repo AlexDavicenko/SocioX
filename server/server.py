@@ -5,7 +5,7 @@ from threading import Thread, Event
 from typing import List
 
 
-from clientHandler import ClientHandler
+from client_handler.clientHandler import ClientHandler
 from controller import Controller
 
 class Server:
@@ -14,22 +14,21 @@ class Server:
         self.controller = Controller()
         self.close_event = Event()
 
-        self.threads = 0
         self.current_clients: List[ClientHandler] = []
         self.id_counter = 0
+        self.threads = 0
         
-        self.PORT = port
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         #self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.PORT = port
         self.HOST = socket.gethostbyname(socket.gethostname())
         
-        print(f"Running on: {(self.HOST,self.PORT)}")
+    def start(self) -> None:
+
         self.server.bind((self.HOST, self.PORT))
         self.server.listen()
-
-
-    def start(self) -> None:
-    
+        print(f"Running on: {(self.HOST,self.PORT)}")
+        
         Thread(target=self.accept_clients).start()
         self.listen_for_close()
         

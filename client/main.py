@@ -9,20 +9,24 @@ from client import Client
 class App(ctk.CTk):
     def __init__(self) -> None:
         super().__init__()
-            
+        
         self.controller = Controller(self)
- 
-
-        self.client = Client(self.controller, offline_mode =False)
-        Thread(target=self.client.start, args=()).start()
+        
+        try:
+            self.client = Client(self.controller, offline_mode =False)
+            Thread(target=self.client.start, args=()).start()
+        except ConnectionRefusedError:
+            print("Server is currently offline. Try again later!")
+            exit(0)
 
         self.init_tkinter_settings()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
 
+
     def on_closing(self):
-        self.client.close()
         self.destroy()
+        self.client.close()
 
 
     def init_tkinter_settings(self) -> None:

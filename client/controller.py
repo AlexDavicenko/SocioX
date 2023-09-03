@@ -22,7 +22,6 @@ class Controller:
 
     def __init__(self, root: ctk.CTk) -> None:
         
-        self.client_id: str = None
         self.client_username: str = None
         self.logged_in: bool = False
 
@@ -63,7 +62,7 @@ class Controller:
     def recieve_incoming_msg(self, msg: NewMessageNotif):
         #check channel id
         frame: CoreAppEntryPointWindow = self.frames[WindowTypes.CoreAppEntryPointWindow]
-        frame.message_box_frame.add_message(msg.text, msg.text, msg.text)
+        frame.add_message(msg.channel_id, msg.sender_name, msg.time_sent, msg.content)
 
     def get_outgoing_msgs(self) -> List[TCPMessage]:
         if self.outgoing_msgs:
@@ -72,18 +71,16 @@ class Controller:
             self.outgoing_msgs = []
             return msgs
 
-    def add_outgoing_text_msg(self, msg: str) -> None:
+    def add_outgoing_text_msg(self, msg: str, channel_id: int) -> None:
         self.outgoing_msgs.append(
-            TextMessage(datetime.now(), 0, datetime.now(), 0, msg)
+            TextMessage(channel_id, msg)
         )
 
     def channel_create_request(self, channel_name: str):
         print('channel_create_request')
         self.outgoing_msgs.append(
             ChannelCreateRequest(
-            datetime.now(),
-            self.client_id,
-            channel_name
+            channel_name=channel_name
             )
         )   
     
@@ -101,26 +98,22 @@ class Controller:
     def channel_join_request(self, channel_id: int):
         self.outgoing_msgs.append(
             ChannelJoinRequest(
-            datetime.now(),
-            self.client_id,
-            channel_id
+            channel_id=channel_id
             )
         )
 
     def attempt_login(self, name: str) -> None:
+        self.client_username = name
         self.outgoing_msgs.append(
             LoginAttempt(
-            datetime.now(),
-            0,
-            name
+            ip = 0,
+            username=name
             )
         )
 
 
-    def login_approved(self, client_id: int, client_username: str): 
+    def login_approved(self): 
         
-        self.client_id = client_id
-        self.client_username = client_username
         self.logged_in = True
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
 

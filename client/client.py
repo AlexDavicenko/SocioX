@@ -26,6 +26,8 @@ class Client():
         self.server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_conn.connect((self.HOST, self.PORT))
 
+        logging.info(f"Connected to server {self.HOST, self.PORT}")
+
     def user_input(self):
         while not self.close_event.is_set():
             try:
@@ -34,9 +36,9 @@ class Client():
                     for msg in outgoing_msgs:
                         logging.info(f"[MESSAGE SENT] {msg}")
                         self.send_msg(msg)
-                        time.sleep(0.05)
+                        time.sleep(0.001)
                 else:
-                    time.sleep(0.2)
+                    time.sleep(0.001)
 
             except Exception as e:
                 logging.error(str(e))
@@ -54,7 +56,7 @@ class Client():
 
                 elif isinstance(msg_from_server, LoginResponse):
                     if msg_from_server.success:
-                        self.controller.login_approved(msg_from_server.client_id, msg_from_server.client_username)
+                        self.controller.login_approved()
                 
                 elif isinstance(msg_from_server, ChannelAddResponse):
                     if msg_from_server.success:
@@ -78,8 +80,6 @@ class Client():
 
     
     def close(self):
-
-        exit(0)
         self.server_conn.close()
 
 

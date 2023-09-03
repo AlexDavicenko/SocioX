@@ -5,7 +5,7 @@ from datetime import datetime
 
 @dataclass
 class TCPMessage:
-    time_TCP_message_sent: datetime
+    pass
  
 #Connection Messages:
 
@@ -25,20 +25,19 @@ class ConnectionClosed(ConnectionMessage):
 
 @dataclass
 class ClientMessage(TCPMessage):
-    client_id: int
-
+    pass
 
 @dataclass
 class TextMessage(ClientMessage):
-    time_sent: datetime
     channel_id: int
-    text: str
+    content: str
 
 @dataclass
 class NewMessageNotif(ClientMessage):
     time_sent: datetime
     channel_id: int
-    text: str
+    content: str
+    sender_name: str
 
 @dataclass
 class FriendRequest(ClientMessage):
@@ -66,7 +65,7 @@ class ChannelAddResponse(ClientMessage):
 
 @dataclass
 class ChannelUpdateRequest(ClientMessage):
-    channel_id: id
+    channel_id: int
     last_updated: datetime
 
 #Auth Messages:
@@ -76,13 +75,11 @@ class AuthMessage(TCPMessage):
 
 @dataclass
 class LoginAttempt(AuthMessage):
-    name: str
+    username: str
 
 @dataclass
 class LoginResponse(AuthMessage):
     success: bool
-    client_id: int
-    client_username: str
 
 @dataclass
 class SignUpAttempt(AuthMessage):

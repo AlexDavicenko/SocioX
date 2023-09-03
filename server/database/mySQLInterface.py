@@ -1,13 +1,17 @@
 #https://dev.mysql.com/doc/connector-python/en/connector-python-example-ddl.html
 
+import os
+import logging
+
 import mysql.connector
 import mysql.connector.errorcode
-import os
 
-from typing import TypeVar
+from typing import TypeVar, List, Dict, Any
 from types import TracebackType
 from datetime import datetime
-from region import Region
+
+from database.region import Region
+
 
 
 T = TypeVar('T', bound = 'MySQLConnection')
@@ -19,23 +23,25 @@ class MySQLConnection:
         self.DB_NAME = database_name
 
     def __enter__(self: T) -> T:
-        self.cnx = mysql.connector.connect(host = "localhost", database = "chatapp", user = 'root', password = os.getenv('MySQLPassword'))
+        print("DB Opened")
+        logging.info('DB Opened')
+        self.cnx = mysql.connector.connect(host = "localhost", user = 'root', password = os.getenv('MySQLPassword'))
         self.cursor = self.cnx.cursor(buffered=False)
         self.connect_to_database()
         return self
     
     def __exit__(self, exc_type: type[BaseException], exc_value: BaseException, trackeback: TracebackType) -> None:
         print("DB Closed")
+        logging.info('DB Closed')
         self.cursor.close()
         self.cnx.close()
 
 
     def create_database(self) ->  None:
         try:
-            self.cursor.execute(
-                f"CREATE DATABASE {self.DB_NAME} DEFAULT CHARACTER SET 'utf8'")
+            self.cursor.execute(f"CREATE DATABASE {self.DB_NAME} DEFAULT CHARACTER SET 'utf8'")
         except mysql.connector.Error as err:
-            print("Failed creating database: {err}")
+            print(f"Failed creating database: {err}")
         self.connect_to_database()
 
     
@@ -63,13 +69,49 @@ class MySQLConnection:
             """, username, firstname, lastname, email, region.name, self.convert_datetime_format(date_of_birth), self.convert_datetime_format(datetime.now())
         )
 
-    def add_channel(self, channel_name: str, owner_id: int):
+    def add_channel(self, channel_name: str, owner_id: int, created_datetime: datetime):
         self.__execute_query(
             f"""
             INSERT INTO Channels (ChannelName, DateCreated, OwnerID)
             VALUES (%s, %s, %s)
-            """, channel_name, self.convert_datetime_format(datetime.now()), owner_id
+            """, channel_name, self.convert_datetime_format(created_datetime), owner_id
         )
+    
+    def get_channel_id(self, channel_name: str, owner_id: int, created_datetime: datetime) -> List[Dict[str, Any]]:
+        return self.__execute_query(
+            f"""
+            SELECT ChannelID 
+            FROM channels
+            WHERE ChannelName = %s AND DateCreated = %s AND OwnerID = %s;
+            """, channel_name, self.convert_datetime_format(created_datetime), owner_id
+        )
+    
+    def get_user(self, username) -> List[Dict[str, Any]]:
+        return self.__execute_query(
+            f"""
+            SELECT UserID 
+            FROM users 
+            WHERE username = %s;
+            """, username
+        )
+    
+    def get_user_data(self, user_id) -> List[Dict[str, Any]]:
+        return self.__execute_query(
+            f"""
+            SELECT *
+            FROM users 
+            WHERE UserID = %s;
+            """, user_id
+        )
+    def get_channel_data(self, channel_id) -> List[Dict[str, Any]]:
+        return self.__execute_query(
+            f"""
+            SELECT *
+            FROM channels 
+            WHERE ChannelID = %s;
+            """, channel_id
+        )
+
 
     def add_user_channel_connection(self, channel_id: int, user_id: int):
         self.__execute_query(
@@ -79,7 +121,7 @@ class MySQLConnection:
             """, channel_id, self.convert_datetime_format(datetime.now()), user_id
         )
 
-    def add_messages(self, channel_id: int, content: str, sender_id: int):
+    def add_message(self, channel_id: int, content: str, sender_id: int):
         self.__execute_query(
             f"""
             INSERT INTO Messages (ChannelID, Content, DateSent, SenderID)
@@ -88,8 +130,8 @@ class MySQLConnection:
         )
 
 
-    def get_channels_users(self, channel_id):
-        result = self.__execute_query(
+    def get_channel_users(self, channel_id) -> List[Dict[str, Any]]:
+        return self.__execute_query(
             f"""
             SELECT u.UserID, u.Username FROM UserChannelConnection as uc
             LEFT JOIN Users as u
@@ -97,13 +139,9 @@ class MySQLConnection:
             WHERE uc.ChannelID = %s
             """, channel_id
         )
-        return list(map(lambda row: {
-            'UserID': row[0],
-            'Username': row[1],
-        },result))
 
-    def get_users_channels(self, user_id):
-        result = self.__execute_query(
+    def get_users_channels(self, user_id) -> List[Dict[str, Any]]:
+        return self.__execute_query(
             f"""
             SELECT c.ChannelID, c.ChannelName FROM UserChannelConnection as uc
             LEFT JOIN Channels as c
@@ -111,23 +149,22 @@ class MySQLConnection:
             WHERE uc.UserID = %s
             """, user_id
         )
-        return list(map(lambda row: {
-            'ChannelID': row[0],
-            'ChannelName': row[1],
-        },result))
 
 
     def read_table(self, table_name):
         return self.__execute_query(f""" SELECT * FROM {table_name}""")
 
 
-    def __execute_query(self, query: str, *args) -> list:
+    def __execute_query(self, query: str, *args) -> List[Dict[str, Any]]:
         try:
             self.cursor.execute(query, args)
             data = self.cursor.fetchall()
             self.cnx.commit()
-            return data
-        
+
+            if data:
+                column_names = [i[0] for i in self.cursor.description]
+                return [dict(zip(column_names, row)) for row in data]
+            
         except mysql.connector.Error as err:
             print(f"An error has occoured: {err}")
 

@@ -15,7 +15,8 @@ with MySQLConnection('chatapp') as db:
         Region varchar(20),
         DateOfBirth datetime,
         DateAccountCreated datetime,
-        PRIMARY KEY (UserID)
+        PRIMARY KEY (UserID),
+        UNIQUE (Username)
         ) 
         """
     )

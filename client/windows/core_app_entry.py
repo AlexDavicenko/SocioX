@@ -25,6 +25,8 @@ class CoreAppEntryPointWindow(Window):
         
         #ChannelId: ChannelFrame
         self.channel_frames: Dict[int, ChannelFrame] = {}
+        self.current_channel_id: int = None
+
 
         self.current_channel_frame: ChannelFrame = None
         self.channel_frame_container = ctk.CTkFrame(self) 
@@ -43,12 +45,7 @@ class CoreAppEntryPointWindow(Window):
         message_text = self.messageBoxText.get()
         if message_text:
 
-            self.controller.add_outgoing_text_msg(message_text)
-            self.current_channel_frame.add_message(
-                self.name,
-                datetime.now().strftime('%H:%M:%S'),
-                message_text
-                )
+            self.controller.add_outgoing_text_msg(message_text, self.current_channel_id)
         self.messageBoxText.set("")
 
     def add_channel_icon_to_side_bar(self, channel_id, channel_name):
@@ -59,12 +56,14 @@ class CoreAppEntryPointWindow(Window):
         self.channel_frames[channel_id] = channel_frame
         #channel_frame.grid(row=0, column=1, padx=5, pady=1, sticky="nesw")
 
+    def add_message(self, channel_id: int, username: str, time_sent: datetime, content: str):
+        self.channel_frames[channel_id].add_message(username, time_sent, content)
+
 
     def switch_channel_frame(self, channel_id: int):
         channel_frame = self.channel_frames[channel_id]
         print('frame switch attempt')
-        print(self.channel_frames)
-
+        self.current_channel_id = channel_id
         if self.current_channel_frame:
             self.current_channel_frame.pack_forget()
         channel_frame.pack(expand = True, fill = 'both')
@@ -123,14 +122,14 @@ class ChannelFrame(ctk.CTkScrollableFrame):
         self.messages: List[MessageFrame] = []
         
         
-    def add_message(self, username, time, text):
-        message_frame = MessageFrame(self, username, time, text)
+    def add_message(self, username, time, content):
+        message_frame = MessageFrame(self, username, time, content)
         message_frame.pack(expand = True, fill = ctk.X, pady = (10,10))
 
         self.messages.append(message_frame)
 
 class MessageFrame(ctk.CTkFrame):
-    def __init__(self, master, username, time, text):
+    def __init__(self, master, username, time, content):
         super().__init__(master, border_color= "gray", border_width= 1)
         
         self.USERNAME_FONT = ctk.CTkFont('Helvetica', 16, 'bold')
@@ -139,7 +138,7 @@ class MessageFrame(ctk.CTkFrame):
 
         self.username = username
         self.time = time
-        self.text = text
+        self.content = content
 
         self.context_frame = ctk.CTkFrame(self, corner_radius = 1)
 
@@ -156,7 +155,7 @@ class MessageFrame(ctk.CTkFrame):
         self.timeLabel.pack(side= tk.RIGHT, anchor = "ne", ipadx = 10)
 
 
-        self.textLabel = ctk.CTkLabel(self.text_frame, text=text, justify="left", font = self.MESSAGE_FONT,anchor="w")
+        self.textLabel = ctk.CTkLabel(self.text_frame, text=content, justify="left", font = self.MESSAGE_FONT,anchor="w")
         self.textLabel.pack(side= tk.LEFT, fill = tk.X, padx = 10, pady = (0,5), anchor = "w", expand = True)
         self.textLabel.bind('<Configure>', lambda e: self.textLabel.configure(wraplength=self.textLabel.winfo_width()))
 
