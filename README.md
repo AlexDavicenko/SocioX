@@ -1,4 +1,3 @@
-# ChatApp
+# Socio
 
-TODO: 
-    Make FRAME Enum instead of string
+My NEA project chat app
