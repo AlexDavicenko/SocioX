@@ -24,6 +24,7 @@ class Client():
         
         if offline_mode: return
         self.server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #self.server_conn.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 102400)
         self.server_conn.connect((self.HOST, self.PORT))
 
         logging.info(f"Connected to server {self.HOST, self.PORT}")
@@ -48,23 +49,24 @@ class Client():
     def server_messages(self):
         while not self.close_event.is_set():
             try:
-                msg = self.receive_msg()
-                logging.info(f"[MESSAGE RECEIVED] {msg}")
 
-                if isinstance(msg, NewMessageNotif):
-                    self.controller.recieve_incoming_msg(msg)
+                msgs = self.receive_msg()
+                for msg in msgs:                  
+                    logging.info(f"[MESSAGE RECEIVED] {msg}")
 
-                elif isinstance(msg, LoginResponse):
-                    if msg.success:
-                        self.controller.login_approved()
-                
-                elif isinstance(msg, ChannelAddResponse):
-                    if msg.success:
-                        self.controller.add_channel(
-                            msg.channel_id,
-                            msg.channel_name
-                        )
+                    if isinstance(msg, NewMessageNotif):
+                        self.controller.recieve_incoming_msg(msg)
 
+                    elif isinstance(msg, LoginResponse):
+                        if msg.success:
+                            self.controller.login_approved()
+                    
+                    elif isinstance(msg, ChannelAddResponse):
+                        if msg.success:
+                            self.controller.add_channel(
+                                msg.channel_id,
+                                msg.channel_name
+                            )
             except (ConnectionResetError, ConnectionAbortedError) as e:
                 logging.error(e)
                 self.close_event.set()

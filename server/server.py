@@ -19,6 +19,7 @@ class Server:
         self.threads = 0
         
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
         #self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.PORT = port
         self.HOST = socket.gethostbyname(socket.gethostname())

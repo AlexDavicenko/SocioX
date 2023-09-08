@@ -1,6 +1,7 @@
 from socket import socket
 from threading import Event
-WORD_LENGTH = 64
+WORD_LENGTH = 1024
+
 
 def send_bytes(connection: socket, data: bytes) -> None:
     header = str(f"{len(data):<{WORD_LENGTH}}").encode()

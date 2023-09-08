@@ -58,23 +58,23 @@ if __name__ == '__main__':
         
     dal = DataAccessLayer('chatapp')
 
-    #dal.add_user("User1")
-    #dal.add_user("User2")
-    #dal.add_user("User3")
+    dal.add_user("User1")
+    dal.add_user("User2")
+    dal.add_user("User3")
 
-    user2_id = dal.get_user_id('User2')
-    user3_id = dal.get_user_id('User3')
+    #user2_id = dal.get_user_id('User2')
+    #user3_id = dal.get_user_id('User3')
     
-    print(user2_id)
+    #print(user2_id)
     #channel1_id = dal.add_channel('Channel1', user2_id)
-    channel1_id = 3
-    print(channel1_id)
+    #channel1_id = 3
+    #print(channel1_id)
     
     #dal.add_user_channel_connection(channel1_id, user2_id)
     #dal.add_user_channel_connection(channel1_id, user3_id)
 
     
 
-    print(dal.get_channel_users(channel1_id))
+    #print(dal.get_channel_users(channel1_id))
     
     #dal.get_user_channels(0)

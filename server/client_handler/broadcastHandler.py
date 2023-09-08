@@ -21,16 +21,17 @@ class BroadcastHandler:
     def broadcast_thread(self) -> None:        
         while not self.close_event.is_set():
             try:
-                for msg in self.controller.get_new_messages(self.client_id):
+                msgs = self.controller.get_new_messages(self.client_id)
+                for msg in msgs:
                     logging.info(f"Sending message to {self.client_id}: [{msg}]")
-                    self.send_msg(msg)
+                self.send_msg(msgs)
+            
                 
-                    time.sleep(0.001)
-
+                time.sleep(0.05)
             except (ConnectionRefusedError, ConnectionResetError):
                 logging.error(f"[CLIENT DISCONNECTED]: {self.client_id}")
                 self.close_event.set()
-                
+            
     
 
     def send_msg(self, msg: TCPMessage) -> None:

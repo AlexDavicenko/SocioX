@@ -47,12 +47,14 @@ class Controller:
             for user in users:
                 #Determine who needs to be notified about the message
                 if user['UserID'] != user_id:
-                    self.add_message_by_id(self.user_id_client_id_map[user['UserID']], NewMessageNotif(
-                        time_sent=datetime.now(),
-                        channel_id=msg.channel_id,
-                        content=msg.content,
-                        sender_name=sender_data['Username']
-                    ))
+                    #Checking if the user is currently still connected
+                    if user['UserID'] in self.user_id_client_id_map: 
+                        self.add_message_by_id(self.user_id_client_id_map[user['UserID']], NewMessageNotif(
+                            time_sent=datetime.now(),
+                            channel_id=msg.channel_id,
+                            content=msg.content,
+                            sender_name=sender_data['Username']
+                        ))
 
         elif isinstance(msg, ConnectionClosed):
             pass
@@ -81,7 +83,6 @@ class Controller:
             user_id = self.client_id_user_id_map[client_id]
             self.dal.add_user_channel_connection(msg.channel_id, user_id)
             channel_data = self.dal.get_channel_data(msg.channel_id)[0]
-
             self.add_message_by_id(client_id, ChannelAddResponse(
                 success = True,
                 channel_id = msg.channel_id,
@@ -114,9 +115,7 @@ class Controller:
 
         user_id = self.client_id_user_id_map[client_id]
         for channel in self.dal.get_user_channels(user_id):
-            print(channel)
             channel_id = channel['ChannelID']
-
             self.add_message_by_id(client_id, ChannelAddResponse(
                 success = True,
                 channel_id = channel_id,
@@ -128,7 +127,6 @@ class Controller:
             #   update a user when they join a channel
             #   Order messages when retrieved
             for message in self.dal.get_channels_messages(channel_id):
-                print(message)
                 self.add_message_by_id(client_id, NewMessageNotif(
                     time_sent=message['DateSent'],
                     channel_id=channel_id,

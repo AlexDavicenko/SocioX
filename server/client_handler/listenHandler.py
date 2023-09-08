@@ -26,7 +26,7 @@ class ListenHandler:
                 logging.info(f"Recieved message from {self.client_id}: [{msg}]")
 
                 self.controller.handle_message(msg, self.client_id)
-
+                
             except (ConnectionResetError, ConnectionRefusedError, ConnectionAbortedError):
                 logging.error(f"[CLIENT DISCONNECTED]: {self.client_id}")
                 self.close_event.set()

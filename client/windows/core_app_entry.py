@@ -15,7 +15,6 @@ class CoreAppEntryPointWindow(Window):
 
         self.name = self.controller.client_username
 
-        #remove and fix later
         self.messageBoxText = tk.StringVar()
 
 
@@ -40,7 +39,6 @@ class CoreAppEntryPointWindow(Window):
         self.bind('<Return>', self.send_button_clicked)
     
     
-
     def send_button_clicked(self, e = None):
         message_text = self.messageBoxText.get()
         if message_text:
@@ -53,15 +51,15 @@ class CoreAppEntryPointWindow(Window):
                 )
         self.messageBoxText.set("")
 
-    def add_channel_icon_to_side_bar(self, channel_id, channel_name):
+    def add_channel(self, channel_id, channel_name):
         
         self.side_channel_frame.add_channel_button_to_side_bar(channel_id, channel_name)
-
         channel_frame = ChannelFrame(self.channel_frame_container, channel_name)
         self.channel_frames[channel_id] = channel_frame
         #channel_frame.grid(row=0, column=1, padx=5, pady=1, sticky="nesw")
 
     def add_message(self, channel_id: int, username: str, time_sent: datetime, content: str):
+
         self.channel_frames[channel_id].add_message(username, time_sent, content)
 
 
@@ -70,10 +68,10 @@ class CoreAppEntryPointWindow(Window):
         self.current_channel_id = channel_id
         if self.current_channel_frame:
             self.current_channel_frame.pack_forget()
-        channel_frame.pack(expand = True, fill = 'both')
         self.current_channel_frame = channel_frame
+
+        channel_frame.pack(expand = True, fill = 'both')
         channel_frame.tkraise()
-        #                frame.grid(row = 0, column = 0, sticky ="nsew")
 
         
 class TextBarFrame(ctk.CTkFrame):
@@ -125,10 +123,10 @@ class ChannelFrame(ctk.CTkScrollableFrame):
         self.messages: List[MessageFrame] = []
         
         
-    def add_message(self, username, time_sent, content):
+    def add_message(self, username: str, time_sent: datetime, content: str):
         message_frame = MessageFrame(self, username, time_sent, content)
         message_frame.pack(expand = True, fill = ctk.X, pady = (10,10))
-
+        #self._scrollbar.set(0.9,1)
         self.messages.append(message_frame)
 
 class MessageFrame(ctk.CTkFrame):

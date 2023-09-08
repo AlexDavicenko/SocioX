@@ -24,7 +24,6 @@ class Controller:
         
         self.client_username: str = None
         self.logged_in: bool = False
-
         self.outgoing_msgs = []
 
         self.root_container = ctk.CTkFrame(root) 
@@ -53,7 +52,8 @@ class Controller:
     
         self.root_container.grid_rowconfigure(0, weight = 1)
         self.root_container.grid_columnconfigure(0, weight = 1)
-        
+        self.core_app: CoreAppEntryPointWindow = self.frames[WindowTypes.CoreAppEntryPointWindow]
+
     
     def switch_frame(self, frame_name: str) -> None:
         frame = self.frames[frame_name]
@@ -61,8 +61,7 @@ class Controller:
     
     def recieve_incoming_msg(self, msg: NewMessageNotif):
         #check channel id
-        frame: CoreAppEntryPointWindow = self.frames[WindowTypes.CoreAppEntryPointWindow]
-        frame.add_message(msg.channel_id, msg.sender_name, msg.time_sent, msg.content)
+        self.core_app.add_message(msg.channel_id, msg.sender_name, msg.time_sent, msg.content)
 
     def get_outgoing_msgs(self) -> List[TCPMessage]:
         if self.outgoing_msgs:
@@ -77,34 +76,35 @@ class Controller:
         )
 
     def channel_create_request(self, channel_name: str):
-        print('channel_create_request')
         self.outgoing_msgs.append(
             ChannelCreateRequest(
             channel_name=channel_name
             )
         )   
     
-    def add_channel(self, channel_id, channel_name):
-        frame: CoreAppEntryPointWindow = self.frames[WindowTypes.CoreAppEntryPointWindow]
-        frame.add_channel_icon_to_side_bar(channel_id, channel_name)
+    def add_channel(self, channel_id: int, channel_name: str):
+        self.core_app.add_channel(channel_id, channel_name)
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
     
     def switch_channel(self, channel_id):
-        frame: CoreAppEntryPointWindow = self.frames[WindowTypes.CoreAppEntryPointWindow]
-        frame.switch_channel_frame(channel_id)
+        self.core_app.switch_channel_frame(channel_id)
 
 
 
     def channel_join_request(self, channel_id: int):
-        self.outgoing_msgs.append(
-            ChannelJoinRequest(
-            channel_id=channel_id
+        if channel_id not in self.core_app.channel_frames:
+            self.outgoing_msgs.append(
+                ChannelJoinRequest(
+                channel_id=channel_id
+                )
             )
-        )
+        else:
+            # TODO: Tell core app that the channel has already been joined
+            pass
 
     def attempt_login(self, name: str) -> None:
         self.client_username = name
-        self.frames[WindowTypes.CoreAppEntryPointWindow].name = name
+        self.core_app.name = name
         self.outgoing_msgs.append(
             LoginAttempt(
             ip = 0,
