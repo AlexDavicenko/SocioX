@@ -81,6 +81,7 @@ class Controller:
 
         elif isinstance(msg, ChannelJoinRequest):
             user_id = self.client_id_user_id_map[client_id]
+            #TODO: check if channel exists
             self.dal.add_user_channel_connection(msg.channel_id, user_id)
             channel_data = self.dal.get_channel_data(msg.channel_id)[0]
             self.add_message_by_id(client_id, ChannelAddResponse(
@@ -88,6 +89,7 @@ class Controller:
                 channel_id = msg.channel_id,
                 channel_name= channel_data['ChannelName']
             ))
+            self.update_user_on_channel_messages(client_id, msg.channel_id)
 
         elif isinstance(msg, ChannelCreateRequest):
             
@@ -110,6 +112,16 @@ class Controller:
         self.messages[client_id] = new_msgs
 
     
+    def update_user_on_channel_messages(self, client_id: int, channel_id: int):
+        for message in self.dal.get_channels_messages(channel_id):
+            self.add_message_by_id(client_id, NewMessageNotif(
+                time_sent=message['DateSent'],
+                channel_id=channel_id,
+                content=message['Content'],
+                sender_name=message['Username']
+            ))
+
+
 
     def update_client(self, client_id: int):
 
@@ -126,10 +138,5 @@ class Controller:
             #   modularise updating a channel when another user joins 
             #   update a user when they join a channel
             #   Order messages when retrieved
-            for message in self.dal.get_channels_messages(channel_id):
-                self.add_message_by_id(client_id, NewMessageNotif(
-                    time_sent=message['DateSent'],
-                    channel_id=channel_id,
-                    content=message['Content'],
-                    sender_name=message['Username']
-                ))
+            self.update_user_on_channel_messages(client_id, channel_id)
+            

@@ -22,9 +22,10 @@ class BroadcastHandler:
         while not self.close_event.is_set():
             try:
                 msgs = self.controller.get_new_messages(self.client_id)
-                for msg in msgs:
-                    logging.info(f"Sending message to {self.client_id}: [{msg}]")
-                self.send_msg(msgs)
+                if msgs:
+                    for msg in msgs:
+                        logging.info(f"Sending message to {self.client_id}: [{msg}]")
+                    self.send_msg(msgs)
             
                 
                 time.sleep(0.05)

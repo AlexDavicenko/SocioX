@@ -1,6 +1,10 @@
 from socket import socket
 from threading import Event
-WORD_LENGTH = 1024
+WORD_LENGTH = 64
+
+
+
+
 
 
 def send_bytes(connection: socket, data: bytes) -> None:
@@ -9,6 +13,7 @@ def send_bytes(connection: socket, data: bytes) -> None:
     connection.send(data)
 
 def listen_for_bytes(connection: socket, close_event: Event = Event()) -> bytes:
+
     full_data = b""
     
     new_transmission = True

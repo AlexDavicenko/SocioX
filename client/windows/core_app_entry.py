@@ -46,7 +46,7 @@ class CoreAppEntryPointWindow(Window):
             self.controller.add_outgoing_text_msg(message_text, self.current_channel_id)
             self.current_channel_frame.add_message(
                 self.name,
-                datetime.now().strftime('%H:%M:%S'),
+                datetime.now(),
                 message_text
                 )
         self.messageBoxText.set("")
@@ -54,7 +54,7 @@ class CoreAppEntryPointWindow(Window):
     def add_channel(self, channel_id, channel_name):
         
         self.side_channel_frame.add_channel_button_to_side_bar(channel_id, channel_name)
-        channel_frame = ChannelFrame(self.channel_frame_container, channel_name)
+        channel_frame = ChannelFrame(self.channel_frame_container, channel_name, channel_id)
         self.channel_frames[channel_id] = channel_frame
         #channel_frame.grid(row=0, column=1, padx=5, pady=1, sticky="nesw")
 
@@ -91,8 +91,17 @@ class SideChannelFrame(ctk.CTkScrollableFrame):
         self.controller = controller
         self.channel_buttons: Dict[id,ChannelButton] = {}        
 
-        self.add_channel_button = ctk.CTkButton(self, text= 'Add Channel', command = self.add_channel_button_clicked, width = 100, height = 25)
-        self.add_channel_button.pack(pady = (5, 5))
+        self.add_channel_button = ctk.CTkButton(
+            self,
+            text= 'Add Channel',
+            command = self.add_channel_button_clicked,
+            width = 100, 
+            height = 25, 
+            fg_color = '#e21d27', 
+            hover_color='#ce3b43'
+        )
+        
+        self.add_channel_button.pack(pady = (50, 5), side = 'bottom', expand = True)
 
     def add_channel_button_clicked(self, e = None):
         self.controller.switch_frame(WindowTypes.AddChannelWindow)
@@ -100,7 +109,7 @@ class SideChannelFrame(ctk.CTkScrollableFrame):
     def add_channel_button_to_side_bar(self, channel_id: int, channel_name: str):
         btn = ChannelButton(self, self.controller, channel_id, channel_name)
         self.channel_buttons[channel_id] = btn
-        btn.pack(pady = (0,5))
+        btn.pack(pady = (0,5), side = 'top', expand = True)
     
 
 class ChannelButton(ctk.CTkButton):
@@ -114,17 +123,17 @@ class ChannelButton(ctk.CTkButton):
         self.controller.switch_channel(self.channel_id)
 
 class ChannelFrame(ctk.CTkScrollableFrame):
-    def __init__(self, master, channel_name):
+    def __init__(self, master, channel_name, channel_id):
         super().__init__(master, fg_color=['gray86', 'gray17'])
         
-        head = ctk.CTkLabel(self, text = channel_name)
+        head = ctk.CTkLabel(self, text = f"{channel_name} {' '*20} ChannelID: {channel_id}")
         head.pack(side= tk.TOP, expand = True, fill = tk.X)
 
         self.messages: List[MessageFrame] = []
         
         
     def add_message(self, username: str, time_sent: datetime, content: str):
-        message_frame = MessageFrame(self, username, time_sent, content)
+        message_frame = MessageFrame(self, username, time_sent.strftime('%H:%M:%S'), content)
         message_frame.pack(expand = True, fill = ctk.X, pady = (10,10))
         #self._scrollbar.set(0.9,1)
         self.messages.append(message_frame)

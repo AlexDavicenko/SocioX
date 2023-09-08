@@ -32,14 +32,14 @@ class Client():
     def user_input(self):
         while not self.close_event.is_set():
             try:
-                outgoing_msgs =  self.controller.get_outgoing_msgs()
-                if outgoing_msgs:
-                    for msg in outgoing_msgs:
+                msgs =  self.controller.get_outgoing_msgs()
+                if msgs:
+                    for msg in msgs:
                         logging.info(f"[MESSAGE SENT] {msg}")
-                        self.send_msg(msg)
-                        time.sleep(0.001)
+                    self.send_msg(msgs)
+                    time.sleep(0.05)
                 else:
-                    time.sleep(0.001)
+                    time.sleep(0.05)
 
             except Exception as e:
                 logging.error(str(e))

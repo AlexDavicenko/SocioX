@@ -153,6 +153,7 @@ class MySQLConnection:
             INNER JOIN users as u
             ON u.UserID = m.SenderID 
             WHERE m.ChannelID = %s
+            ORDER BY m.DateSent ASC
             """, channel_id
         )
 

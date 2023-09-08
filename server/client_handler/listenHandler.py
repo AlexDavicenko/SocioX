@@ -22,11 +22,12 @@ class ListenHandler:
     def listen_thread(self) -> None:
         while not self.close_event.is_set():
             try:
-                msg = self.receive_msg()
-                logging.info(f"Recieved message from {self.client_id}: [{msg}]")
+                msgs = self.receive_msg()
+                for msg in msgs:
+                    logging.info(f"Recieved message from {self.client_id}: [{msg}]")
 
-                self.controller.handle_message(msg, self.client_id)
-                
+                    self.controller.handle_message(msg, self.client_id)
+
             except (ConnectionResetError, ConnectionRefusedError, ConnectionAbortedError):
                 logging.error(f"[CLIENT DISCONNECTED]: {self.client_id}")
                 self.close_event.set()
