@@ -46,6 +46,11 @@ class CoreAppEntryPointWindow(Window):
         if message_text:
 
             self.controller.add_outgoing_text_msg(message_text, self.current_channel_id)
+            self.current_channel_frame.add_message(
+                self.name,
+                datetime.now().strftime('%H:%M:%S'),
+                message_text
+                )
         self.messageBoxText.set("")
 
     def add_channel_icon_to_side_bar(self, channel_id, channel_name):
@@ -62,7 +67,6 @@ class CoreAppEntryPointWindow(Window):
 
     def switch_channel_frame(self, channel_id: int):
         channel_frame = self.channel_frames[channel_id]
-        print('frame switch attempt')
         self.current_channel_id = channel_id
         if self.current_channel_frame:
             self.current_channel_frame.pack_forget()
@@ -109,7 +113,6 @@ class ChannelButton(ctk.CTkButton):
         self.channel_name = channel_name
 
     def switch_channel_button_clicked(self, e = None):
-        print("Switch button clicked")
         self.controller.switch_channel(self.channel_id)
 
 class ChannelFrame(ctk.CTkScrollableFrame):
@@ -122,8 +125,8 @@ class ChannelFrame(ctk.CTkScrollableFrame):
         self.messages: List[MessageFrame] = []
         
         
-    def add_message(self, username, time, content):
-        message_frame = MessageFrame(self, username, time, content)
+    def add_message(self, username, time_sent, content):
+        message_frame = MessageFrame(self, username, time_sent, content)
         message_frame.pack(expand = True, fill = ctk.X, pady = (10,10))
 
         self.messages.append(message_frame)

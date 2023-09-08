@@ -1,6 +1,6 @@
 import copy
 import logging
-import datetime
+from datetime import datetime
 
 from typing import List, Dict, Any
 from dataAccessLayer import DataAccessLayer
@@ -46,13 +46,13 @@ class Controller:
             users = self.dal.get_channel_users(msg.channel_id)
             for user in users:
                 #Determine who needs to be notified about the message
-                print(f"notif added: {user['Username']}")
-                self.add_message_by_id(self.user_id_client_id_map[user['UserID']], NewMessageNotif(
-                    time_sent=datetime.now(),
-                    channel_id=msg.channel_id,
-                    content=msg.content,
-                    sender_name=sender_data['Username']
-                ))
+                if user['UserID'] != user_id:
+                    self.add_message_by_id(self.user_id_client_id_map[user['UserID']], NewMessageNotif(
+                        time_sent=datetime.now(),
+                        channel_id=msg.channel_id,
+                        content=msg.content,
+                        sender_name=sender_data['Username']
+                    ))
 
         elif isinstance(msg, ConnectionClosed):
             pass
@@ -74,6 +74,8 @@ class Controller:
                     ip=0,
                     success=True
                 ))
+                self.update_client(client_id)
+
 
         elif isinstance(msg, ChannelJoinRequest):
             user_id = self.client_id_user_id_map[client_id]
@@ -91,6 +93,7 @@ class Controller:
             user_id = self.client_id_user_id_map[client_id]
 
             channel_id = self.dal.add_channel(msg.channel_name, user_id)
+            self.dal.add_user_channel_connection(channel_id, user_id)
             channel_data = self.dal.get_channel_data(channel_id)[0]
 
             self.add_message_by_id(client_id, ChannelAddResponse(
@@ -105,4 +108,30 @@ class Controller:
         new_msgs = self.messages.get(client_id, []) + [msg] 
         self.messages[client_id] = new_msgs
 
-        
+    
+
+    def update_client(self, client_id: int):
+
+        user_id = self.client_id_user_id_map[client_id]
+        for channel in self.dal.get_user_channels(user_id):
+            print(channel)
+            channel_id = channel['ChannelID']
+
+            self.add_message_by_id(client_id, ChannelAddResponse(
+                success = True,
+                channel_id = channel_id,
+                channel_name = channel['ChannelName']
+            ))
+
+            #TODO: 
+            #   modularise updating a channel when another user joins 
+            #   update a user when they join a channel
+            #   Order messages when retrieved
+            for message in self.dal.get_channels_messages(channel_id):
+                print(message)
+                self.add_message_by_id(client_id, NewMessageNotif(
+                    time_sent=message['DateSent'],
+                    channel_id=channel_id,
+                    content=message['Content'],
+                    sender_name=message['Username']
+                ))

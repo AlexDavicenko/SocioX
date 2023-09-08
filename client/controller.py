@@ -104,6 +104,7 @@ class Controller:
 
     def attempt_login(self, name: str) -> None:
         self.client_username = name
+        self.frames[WindowTypes.CoreAppEntryPointWindow].name = name
         self.outgoing_msgs.append(
             LoginAttempt(
             ip = 0,

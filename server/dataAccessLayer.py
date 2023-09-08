@@ -10,10 +10,10 @@ class DataAccessLayer:
         self.db_name = db_name
    
 
-    def add_user(self, username) -> bool:
+    def add_user(self, username) -> None:
         with MySQLConnection(self.db_name) as db:
             db.add_user(username, "TEST", "TEST", "TEST", Region.EUROPE, datetime.now())
-
+        
     def add_channel(self, channel_name: str, owner_id: int) -> int:
         with MySQLConnection(self.db_name) as db:
             dt = datetime.now()
@@ -30,7 +30,7 @@ class DataAccessLayer:
 
     def get_user_channels(self, user_id: int):
         with MySQLConnection(self.db_name) as db:
-            db.get_users_channels(user_id)
+            return db.get_users_channels(user_id)
 
     def get_channel_users(self, channel_id: int):
         with MySQLConnection(self.db_name) as db:
@@ -50,6 +50,9 @@ class DataAccessLayer:
             if result:
                 return result[0]['UserID']
     
+    def get_channels_messages(self, channel_id: int):
+        with MySQLConnection(self.db_name) as db:
+            return db.get_channels_messages(channel_id)
             
 if __name__ == '__main__':
         

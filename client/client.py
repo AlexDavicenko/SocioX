@@ -48,21 +48,21 @@ class Client():
     def server_messages(self):
         while not self.close_event.is_set():
             try:
-                msg_from_server = self.receive_msg()
-                logging.info(f"[MESSAGE RECEIVED] {msg_from_server}")
+                msg = self.receive_msg()
+                logging.info(f"[MESSAGE RECEIVED] {msg}")
 
-                if isinstance(msg_from_server, NewMessageNotif):
-                    self.controller.recieve_incoming_msg(msg_from_server)
+                if isinstance(msg, NewMessageNotif):
+                    self.controller.recieve_incoming_msg(msg)
 
-                elif isinstance(msg_from_server, LoginResponse):
-                    if msg_from_server.success:
+                elif isinstance(msg, LoginResponse):
+                    if msg.success:
                         self.controller.login_approved()
                 
-                elif isinstance(msg_from_server, ChannelAddResponse):
-                    if msg_from_server.success:
+                elif isinstance(msg, ChannelAddResponse):
+                    if msg.success:
                         self.controller.add_channel(
-                            msg_from_server.channel_id,
-                            msg_from_server.channel_name
+                            msg.channel_id,
+                            msg.channel_name
                         )
 
             except (ConnectionResetError, ConnectionAbortedError) as e:

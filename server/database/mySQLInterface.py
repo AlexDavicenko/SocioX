@@ -23,16 +23,12 @@ class MySQLConnection:
         self.DB_NAME = database_name
 
     def __enter__(self: T) -> T:
-        print("DB Opened")
-        logging.info('DB Opened')
         self.cnx = mysql.connector.connect(host = "localhost", user = 'root', password = os.getenv('MySQLPassword'))
         self.cursor = self.cnx.cursor(buffered=False)
         self.connect_to_database()
         return self
     
     def __exit__(self, exc_type: type[BaseException], exc_value: BaseException, trackeback: TracebackType) -> None:
-        print("DB Closed")
-        logging.info('DB Closed')
         self.cursor.close()
         self.cnx.close()
 
@@ -148,6 +144,16 @@ class MySQLConnection:
             ON c.ChannelID = uc.ChannelID
             WHERE uc.UserID = %s
             """, user_id
+        )
+    
+    def get_channels_messages(self, channel_id: int):
+        return self.__execute_query(
+            """
+            SELECT m.MessageID, m.DateSent, m.Content, u.Username FROM messages as m
+            INNER JOIN users as u
+            ON u.UserID = m.SenderID 
+            WHERE m.ChannelID = %s
+            """, channel_id
         )
 
 
