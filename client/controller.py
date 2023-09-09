@@ -15,20 +15,26 @@ from windows.window_types import WindowTypes
 from windows.login import LoginWindow
 from windows.signup import SignUpWindow
 from windows.email_verification import EmailVerificationWindow
-from windows.core_app_entry import CoreAppEntryPointWindow 
+from windows.core_app.core_app_entry import CoreAppEntryPointWindow 
 from windows.add_channel import AddChannelWindow
 
 class Controller:
 
     def __init__(self, root: ctk.CTk) -> None:
         
-        self.client_username: str = None
-        self.logged_in: bool = False
+        self.root = root
+        self.username: str = None
+        self.logged_in: bool = False 
+        self.current_channel_id: int = None
+
         self.outgoing_msgs = []
 
         self.root_container = ctk.CTkFrame(root) 
         
         self._setup_frames()
+
+    def add_binding(self, key: str, func: callable):
+        self.root.bind(key, func)
 
     def _setup_frames(self) -> None:
 
@@ -57,11 +63,12 @@ class Controller:
     
     def switch_frame(self, frame_name: str) -> None:
         frame = self.frames[frame_name]
+        frame.window_bindings()
         frame.tkraise()
     
     def recieve_incoming_msg(self, msg: NewMessageNotif):
         #check channel id
-        self.core_app.add_message(msg.channel_id, msg.sender_name, msg.time_sent, msg.content)
+        self.core_app.channel_frame.add_message(msg.channel_id, msg.sender_name, msg.time_sent, msg.content)
 
     def get_outgoing_msgs(self) -> List[TCPMessage]:
         if self.outgoing_msgs:
@@ -70,29 +77,37 @@ class Controller:
             self.outgoing_msgs = []
             return msgs
 
-    def add_outgoing_text_msg(self, msg: str, channel_id: int) -> None:
+    def add_outgoing_text_msg(self, content: str) -> None:
         self.outgoing_msgs.append(
-            TextMessage(channel_id, msg)
+            TextMessage(self.current_channel_id, content)
         )
+
+    def add_message_internal(self, content):
+        self.core_app.channel_frame.add_message(self.current_channel_id, self.username, datetime.now(), content)
 
     def channel_create_request(self, channel_name: str):
         self.outgoing_msgs.append(
             ChannelCreateRequest(
             channel_name=channel_name
             )
-        )   
+        )
     
     def add_channel(self, channel_id: int, channel_name: str):
         self.core_app.add_channel(channel_id, channel_name)
+        self.core_app.channel_frame.add_user(channel_id, self.username)
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
+        
     
     def switch_channel(self, channel_id):
-        self.core_app.switch_channel_frame(channel_id)
+        self.core_app.channel_frame.switch_channel(channel_id)
+        self.core_app.right_side_frame.user_list_frame.set_users(self.core_app.channel_frame.current_channel_frame.users)
 
+    def user_join_channel(self, channel_id: int, username: str) -> None:
+        self.core_app.channel_frame.add_user(channel_id, username)
 
 
     def channel_join_request(self, channel_id: int):
-        if channel_id not in self.core_app.channel_frames:
+        if channel_id not in self.core_app.channel_frame.channel_frames:
             self.outgoing_msgs.append(
                 ChannelJoinRequest(
                 channel_id=channel_id
@@ -103,8 +118,8 @@ class Controller:
             pass
 
     def attempt_login(self, name: str) -> None:
-        self.client_username = name
-        self.core_app.name = name
+        self.username = name
+        self.core_app.username = name
         self.outgoing_msgs.append(
             LoginAttempt(
             ip = 0,

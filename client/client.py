@@ -67,6 +67,9 @@ class Client():
                                 msg.channel_id,
                                 msg.channel_name
                             )
+                    elif isinstance(msg, ChannelUserJoinNotif):
+                        self.controller.user_join_channel(msg.channel_id, msg.username)
+                        
             except (ConnectionResetError, ConnectionAbortedError) as e:
                 logging.error(e)
                 self.close_event.set()

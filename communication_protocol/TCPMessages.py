@@ -62,6 +62,10 @@ class ChannelAddResponse(ClientMessage):
     channel_id: int
     channel_name: str
 
+@dataclass
+class ChannelUserJoinNotif(ClientMessage):
+    channel_id: int
+    username: str
 
 @dataclass
 class ChannelUpdateRequest(ClientMessage):

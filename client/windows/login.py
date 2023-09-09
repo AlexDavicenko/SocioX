@@ -25,11 +25,12 @@ class LoginWindow(Window):
 
         self.upper_frame.pack(expand = True, fill = 'both', anchor = "n")
         self.options_frame.pack(fill = 'x', anchor = "s")
-        
-        
 
-    def login_button_clicked(self) -> None:
-        print(self.upper_frame.input_boxes_frame.username_entry_box.get())
+
+    def window_bindings(self): #Polymorphism
+        self.controller.add_binding('<Return>', self.login_button_clicked)
+
+    def login_button_clicked(self, e = None) -> None:
         self.controller.attempt_login(self.upper_frame.input_boxes_frame.username_entry_box.get())
 
 
@@ -82,7 +83,6 @@ class UpperFrame(ctk.CTkFrame):
     def __init__(self, master: LoginWindow):
         super().__init__(master, fg_color=['gray86', 'gray17'])
         self.welcome_label = ctk.CTkLabel(self, text="Welcome", font=('TkDefaultFont', 40))
-        #self.welcome_label.pack(side = 'top', padx = 10, pady=50)
         self.welcome_label.grid(padx = 10, pady = 10, column = 0, row = 0)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0,weight=3)
@@ -90,12 +90,10 @@ class UpperFrame(ctk.CTkFrame):
         self.grid_rowconfigure(2,weight=5)
 
         self.input_boxes_frame = InputBoxesFrame(self, master)
-        #self.input_boxes_frame.pack(anchor = 'center', pady = 40, fill= 'y', expand = True)
         self.input_boxes_frame.grid(padx = 10, pady = 10, column = 0, row = 1)
         frame = ctk.CTkFrame(self, fg_color=['gray86', 'gray17'])
 
         self.login_button = ctk.CTkButton(frame, text = "Login", width = 330, font=('TkDefaultFont', 24), height = 50, command = master.login_button_clicked)
-        #self.login_button.pack(anchor = "n", side = "top",padx = 20, pady = 10)
         self.login_button.pack(anchor='n', side = 'top')
 
         frame.grid(sticky= 'ns', column = 0, row = 2)

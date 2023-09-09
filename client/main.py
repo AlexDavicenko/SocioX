@@ -23,7 +23,6 @@ class App(ctk.CTk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
 
-
     def on_closing(self):
         self.destroy()
         self.client.close()

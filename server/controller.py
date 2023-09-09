@@ -16,7 +16,6 @@ class Controller:
         self.client_ids: List[int] = []
         self.client_id_user_id_map: Dict[int, int] = {}
         self.user_id_client_id_map: Dict[int, int] = {}
-
         self.dal = DataAccessLayer('chatapp')
 
         #Client ID: List[Message Object]
@@ -90,6 +89,8 @@ class Controller:
                 channel_name= channel_data['ChannelName']
             ))
             self.update_user_on_channel_messages(client_id, msg.channel_id)
+            self.update_user_on_channel_members(client_id, msg.channel_id)
+            self.update_users_on_user_join(client_id, msg.channel_id)
 
         elif isinstance(msg, ChannelCreateRequest):
             
@@ -121,6 +122,25 @@ class Controller:
                 sender_name=message['Username']
             ))
 
+    def update_user_on_channel_members(self, client_id: int, channel_id: int):
+        user_id = self.client_id_user_id_map[client_id]
+        
+        for user in self.dal.get_channel_users(channel_id):
+            #Does not notify the same user
+            if user_id != user['UserID']:
+                self.add_message_by_id(client_id, ChannelUserJoinNotif(channel_id, user['Username']))
+
+    def update_users_on_user_join(self, client_id: int, channel_id: int):
+
+        user_id = self.client_id_user_id_map[client_id]
+        username = self.dal.get_user_data(user_id)['Username']
+
+        for user in self.dal.get_channel_users(channel_id):
+            #Does not notify the same user
+            if user_id != user['UserID']:
+                #if currently online
+                if user_id in self.user_id_client_id_map:
+                    self.add_message_by_id(self.user_id_client_id_map[user_id], ChannelUserJoinNotif(channel_id, username))
 
 
     def update_client(self, client_id: int):
@@ -135,8 +155,5 @@ class Controller:
             ))
 
             #TODO: 
-            #   modularise updating a channel when another user joins 
-            #   update a user when they join a channel
-            #   Order messages when retrieved
             self.update_user_on_channel_messages(client_id, channel_id)
-            
+            self.update_user_on_channel_members(client_id, channel_id)
