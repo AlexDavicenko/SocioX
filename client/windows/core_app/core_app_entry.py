@@ -49,7 +49,7 @@ class CoreAppEntryPointWindow(Window):
 
     def window_bindings(self): #Polymorphism
         self.controller.add_binding('<Return>', self.text_bar_frame.send_button_clicked)
-  
+        self.controller.add_binding('<KeyRelease>', self.text_bar_frame.on_message_entry_box_modify)
 
 
     def add_channel(self, channel_id, channel_name):

@@ -22,7 +22,9 @@ class TextBarFrame(ctk.CTkFrame):
 
         self.message_entry_box = ctk.CTkEntry(self, textvariable = self.message_box_text_variable)
         self.message_entry_box.grid(column = 0, row = 1, padx = 10, pady = 10, sticky = 'nsew')
-        
+        self.message_entry_box.bind('<<Modified>>', self.on_message_entry_box_modify)
+
+
         self.send_button = ctk.CTkButton(self, text = "Send", command = self.send_button_clicked)
         self.send_button.grid(column = 1, row = 1, padx = (5,10), sticky = 'ew')
         
@@ -33,7 +35,23 @@ class TextBarFrame(ctk.CTkFrame):
             self.controller.add_outgoing_text_msg(message_text)
             self.controller.add_message_internal(message_text)
         self.message_box_text_variable.set("")
+    
+    def on_message_entry_box_modify(self, e = None):
+        print(self.message_box_text_variable.get())
+        words = self.controller.get_suggestions(self.message_box_text_variable.get())
 
+        if len(words) == 3:
+            self.suggestion_frame.suggestion_box_2.configure(text = words[2][0])
+            self.suggestion_frame.suggestion_box_1.configure(text = words[1][0])
+            self.suggestion_frame.suggestion_box_3.configure(text = words[0][0])
+        elif len(words) == 2:
+            self.suggestion_frame.suggestion_box_2.configure(text = words[1][0])
+            self.suggestion_frame.suggestion_box_1.configure(text = words[0][0])
+            self.suggestion_frame.suggestion_box_3.configure(text = '')
+        elif len(words) == 1:
+            self.suggestion_frame.suggestion_box_2.configure(text = words[0][0])
+            self.suggestion_frame.suggestion_box_1.configure(text = '')
+            self.suggestion_frame.suggestion_box_3.configure(text = '')
 
 class SuggestionFrame(ctk.CTkFrame):
     def __init__(self, master: ctk.CTkFrame, controller):

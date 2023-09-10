@@ -17,6 +17,7 @@ from windows.signup import SignUpWindow
 from windows.email_verification import EmailVerificationWindow
 from windows.core_app.core_app_entry import CoreAppEntryPointWindow 
 from windows.add_channel import AddChannelWindow
+from suggestions.suggestion_API import WordSuggestionAPI
 
 class Controller:
 
@@ -26,7 +27,9 @@ class Controller:
         self.username: str = None
         self.logged_in: bool = False 
         self.current_channel_id: int = None
-
+        
+        self.suggestion_API = WordSuggestionAPI()
+        
         self.outgoing_msgs = []
 
         self.root_container = ctk.CTkFrame(root) 
@@ -127,12 +130,13 @@ class Controller:
             )
         )
 
-
     def login_approved(self): 
         
         self.logged_in = True
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
 
+    def get_suggestions(self, prefix: str) -> List[str]:
+        return self.suggestion_API.get_suggestion(prefix)
 
     def close(self) -> None:
         pass 
