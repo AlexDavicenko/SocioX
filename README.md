@@ -1,3 +1,3 @@
-# Socio
+# SocioX
 
 My NEA project chat app
