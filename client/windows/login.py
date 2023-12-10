@@ -46,8 +46,9 @@ class LoginWindow(Window):
         
         self.password_shown = not self.password_shown
         if self.password_shown:
-            password_box.configure(show = "")
-            show_button.configure(text = "Hide")
+            if password_box.get() != password_box.placeholder:
+                password_box.configure(show = "")
+                show_button.configure(text = "Hide")
         else:
             if password_box.get() != password_box.placeholder:
                 password_box.configure(show = "*")
@@ -82,7 +83,7 @@ class LoginWindow(Window):
 class UpperFrame(ctk.CTkFrame):
     def __init__(self, master: LoginWindow):
         super().__init__(master, fg_color=['gray86', 'gray17'])
-        self.welcome_label = ctk.CTkLabel(self, text="Welcome", font=('TkDefaultFont', 40))
+        self.welcome_label = ctk.CTkLabel(self, text="Login to SocioX", font=('TkDefaultFont', 40))
         self.welcome_label.grid(padx = 10, pady = 10, column = 0, row = 0)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0,weight=3)

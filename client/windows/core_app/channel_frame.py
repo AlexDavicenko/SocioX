@@ -51,7 +51,7 @@ class ChannelFrame(ctk.CTkFrame):
             self.current_channel_frame.pack_forget()
         self.current_channel_frame = channel_frame
 
-        self.header_label.configure(text =f"{channel_frame.channel_name} {' '*20} ChannelID: {channel_id}")
+        self.header_label.configure(text =f"ChannelName:{channel_frame.channel_name} {' '*20} ChannelID: {channel_id} {' '*20} Your Name: { self.controller.username}")
         channel_frame.pack_all()
         channel_frame.pack(expand = True, fill = 'both')
         channel_frame.tkraise()

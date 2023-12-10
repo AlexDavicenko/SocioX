@@ -5,7 +5,6 @@ from region import Region
 
 
 with MySQLConnection('chatapp') as db:
-    """
     db.add_user(
         username = "1",
         firstname= "Alex",
@@ -15,7 +14,15 @@ with MySQLConnection('chatapp') as db:
         date_of_birth=datetime(2006, 3, 3)
     )
     db.add_user(
-        username = "1",
+        username = "2",
+        firstname= "Alex",
+        lastname= "Davicenko",
+        email="adavicenkomail.com",
+        region= Region.AFRICA,
+        date_of_birth=datetime(2006, 3, 3)
+    )
+    db.add_user(
+        username = "3",
         firstname= "Alex",
         lastname= "Davicenko",
         email="adavicenkomail.com",
@@ -24,7 +31,8 @@ with MySQLConnection('chatapp') as db:
     )
     db.add_channel(
         channel_name= "MyFirstChannel",
-        owner_id= 5
+        owner_id= 1,
+        created_datetime=datetime.now()
     )
     """
     
@@ -47,3 +55,4 @@ with MySQLConnection('chatapp') as db:
     print()
     for row in data:
         print(row)
+    """

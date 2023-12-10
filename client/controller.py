@@ -105,9 +105,10 @@ class Controller:
         self.core_app.channel_frame.switch_channel(channel_id)
         self.core_app.right_side_frame.user_list_frame.set_users(self.core_app.channel_frame.current_channel_frame.users)
 
-    def user_join_channel(self, channel_id: int, username: str) -> None:
+    def user_join_channel_update(self, channel_id: int, username: str) -> None:
+        #rerender if in focus
         self.core_app.channel_frame.add_user(channel_id, username)
-
+        
 
     def channel_join_request(self, channel_id: int):
         if channel_id not in self.core_app.channel_frame.channel_frames:
@@ -117,8 +118,17 @@ class Controller:
                 )
             )
         else:
+            print("Channel already added")
             # TODO: Tell core app that the channel has already been joined
             pass
+
+    def create_channel(self, channel_id: int, channel_name: str):
+        self.add_channel(channel_id, channel_name)
+
+
+    def join_channel(self, channel_id: int, channel_name: str):
+        self.add_channel(channel_id, channel_name)
+
 
     def attempt_login(self, name: str) -> None:
         self.username = name
@@ -130,13 +140,23 @@ class Controller:
             )
         )
 
-    def login_approved(self): 
+    def login_approved(self, user_id: int): 
+        print("LOGGING started")
+        logging.basicConfig(
+        level=logging.INFO, 
+        format=f"{user_id}: %(asctime)s %(levelname)s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        filename='client.log',
+        )
         
         self.logged_in = True
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
 
     def get_suggestions(self, prefix: str) -> List[str]:
         return self.suggestion_API.get_suggestion(prefix)
+
+    def on_suggestion_press(self, suggestionNo):
+        self.core_app.text_bar_frame.on_suggestion_press(suggestionNo=suggestionNo)
 
     def close(self) -> None:
         pass 

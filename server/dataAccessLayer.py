@@ -61,6 +61,7 @@ if __name__ == '__main__':
     dal.add_user("User1")
     dal.add_user("User2")
     dal.add_user("User3")
+    dal.add_user("User4")
 
     #user2_id = dal.get_user_id('User2')
     #user3_id = dal.get_user_id('User3')

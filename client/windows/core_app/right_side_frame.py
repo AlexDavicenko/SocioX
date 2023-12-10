@@ -17,23 +17,27 @@ class RightSideFrame(ctk.CTkFrame):
         
 
 
-            
-
-
-
 class UserListFrame(ctk.CTkScrollableFrame):
     def __init__(self, master, controller: Controller):
         super().__init__(master, width = 100, scrollbar_button_color = "#2B2B2B", fg_color=['gray86', 'gray17'])
         self.controller = controller
 
         self.username_labels: List[ctk.CTkLabel] = []
+        
+        
+        self.title_label = ctk.CTkLabel(self, text = "Users")
+        self.title_label.pack()
+
+
     
     def set_users(self, users: List[str]):
-
+        
+        #Clear all current Username Labels
         for user_label in self.username_labels:
             user_label.pack_forget()
         self.username_labels = []
         
+        #Set new Username Labels
         for user in users:
             user_label = ctk.CTkLabel(self, text=user)
             self.username_labels.append(user_label)

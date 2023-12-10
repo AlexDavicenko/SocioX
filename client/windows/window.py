@@ -7,5 +7,4 @@ class Window(ctk.CTkFrame, ABC):
         super().__init__(parent)
 
 
-    def window_bindings(self) -> None:
-        pass
+    def window_bindings(self) -> None: ...

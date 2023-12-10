@@ -35,8 +35,6 @@ class Controller:
 
     def handle_message(self, msg: TCPMessage, client_id):
         
-        
-
         if isinstance(msg, TextMessage):
             user_id = self.client_id_user_id_map[client_id]
             self.dal.add_message(msg.channel_id, msg.content, user_id)
@@ -64,7 +62,8 @@ class Controller:
             if user_id == None:
                 self.add_message_by_id(client_id, LoginResponse(
                     ip=0,
-                    success=False
+                    success=False,
+                    user_id = user_id
                 ))
             else:
                 #save the client_id -> user_id mapping
@@ -73,6 +72,7 @@ class Controller:
 
                 self.add_message_by_id(client_id, LoginResponse(
                     ip=0,
+                    user_id= user_id,
                     success=True
                 ))
                 self.update_client(client_id)
@@ -83,14 +83,15 @@ class Controller:
             #TODO: check if channel exists
             self.dal.add_user_channel_connection(msg.channel_id, user_id)
             channel_data = self.dal.get_channel_data(msg.channel_id)[0]
-            self.add_message_by_id(client_id, ChannelAddResponse(
+            self.add_message_by_id(client_id, ChannelJoinResponse(
                 success = True,
                 channel_id = msg.channel_id,
                 channel_name= channel_data['ChannelName']
             ))
             self.update_user_on_channel_messages(client_id, msg.channel_id)
-            self.update_user_on_channel_members(client_id, msg.channel_id)
+
             self.update_users_on_user_join(client_id, msg.channel_id)
+            self.update_user_on_channel_members(client_id, msg.channel_id)
 
         elif isinstance(msg, ChannelCreateRequest):
             
@@ -100,7 +101,7 @@ class Controller:
             self.dal.add_user_channel_connection(channel_id, user_id)
             channel_data = self.dal.get_channel_data(channel_id)[0]
 
-            self.add_message_by_id(client_id, ChannelAddResponse(
+            self.add_message_by_id(client_id, ChannelCreateResponse(
                 success=True,
                 channel_id=channel_id,
                 channel_name= channel_data['ChannelName']
@@ -122,33 +123,38 @@ class Controller:
                 sender_name=message['Username']
             ))
 
+    #Updates the user on the names of the members of the channel
     def update_user_on_channel_members(self, client_id: int, channel_id: int):
         user_id = self.client_id_user_id_map[client_id]
         
         for user in self.dal.get_channel_users(channel_id):
-            #Does not notify the same user
-            if user_id != user['UserID']:
-                self.add_message_by_id(client_id, ChannelUserJoinNotif(channel_id, user['Username']))
+            print(user['UserID'], user_id)
+            if user['UserID'] != user_id:
+                self.add_message_by_id(client_id, UserJoinNotif(channel_id, user['Username']))
 
+    #Updates the other uses in a channel when a user joins
     def update_users_on_user_join(self, client_id: int, channel_id: int):
 
         user_id = self.client_id_user_id_map[client_id]
-        username = self.dal.get_user_data(user_id)['Username']
+        
+        username = self.dal.get_user_data(user_id)[0]['Username']
 
         for user in self.dal.get_channel_users(channel_id):
-            #Does not notify the same user
-            if user_id != user['UserID']:
-                #if currently online
-                if user_id in self.user_id_client_id_map:
-                    self.add_message_by_id(self.user_id_client_id_map[user_id], ChannelUserJoinNotif(channel_id, username))
+            if user['UserID'] != user_id:
+                #If the user needed to be updated is currently online
+                if user['UserID'] in self.user_id_client_id_map:
+                    #Maps user id to client id to be able to send message
+                    self.add_message_by_id(self.user_id_client_id_map[user['UserID']], UserJoinNotif(channel_id, username))
 
 
+    #Updates clients after login
     def update_client(self, client_id: int):
 
         user_id = self.client_id_user_id_map[client_id]
         for channel in self.dal.get_user_channels(user_id):
+
             channel_id = channel['ChannelID']
-            self.add_message_by_id(client_id, ChannelAddResponse(
+            self.add_message_by_id(client_id, ChannelJoinResponse(
                 success = True,
                 channel_id = channel_id,
                 channel_name = channel['ChannelName']

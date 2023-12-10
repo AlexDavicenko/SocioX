@@ -2,6 +2,7 @@
 
 import customtkinter as ctk
 import tkinter as tk
+
 #add centered option with string formatting like in the blad guys video
 class PlaceHolderEntry(ctk.CTkEntry):
     def __init__(self, master: ctk.CTkFrame, placeholder: str, show: str = "", *args, **kwargs) -> None:
