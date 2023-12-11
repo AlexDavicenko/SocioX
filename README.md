@@ -1,4 +1,4 @@
-# ChatApp
+# SocioX
 
-TODO: 
-    Make FRAME Enum instead of string
+Chat App Project
+

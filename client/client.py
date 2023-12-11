@@ -24,6 +24,7 @@ class Client():
         
         if offline_mode: return
         self.server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #self.server_conn.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 102400)
         self.server_conn.connect((self.HOST, self.PORT))
 
         logging.info(f"Connected to server {self.HOST, self.PORT}")
@@ -31,14 +32,14 @@ class Client():
     def user_input(self):
         while not self.close_event.is_set():
             try:
-                outgoing_msgs =  self.controller.get_outgoing_msgs()
-                if outgoing_msgs:
-                    for msg in outgoing_msgs:
+                msgs =  self.controller.get_outgoing_msgs()
+                if msgs:
+                    for msg in msgs:
                         logging.info(f"[MESSAGE SENT] {msg}")
-                        self.send_msg(msg)
-                        time.sleep(0.001)
+                    self.send_msg(msgs)
+                    time.sleep(0.05)
                 else:
-                    time.sleep(0.001)
+                    time.sleep(0.05)
 
             except Exception as e:
                 logging.error(str(e))
@@ -48,23 +49,33 @@ class Client():
     def server_messages(self):
         while not self.close_event.is_set():
             try:
-                msg_from_server = self.receive_msg()
-                logging.info(f"[MESSAGE RECEIVED] {msg_from_server}")
 
-                if isinstance(msg_from_server, NewMessageNotif):
-                    self.controller.recieve_incoming_msg(msg_from_server)
+                msgs = self.receive_msg()
+                for msg in msgs:                  
+                    logging.info(f"[MESSAGE RECEIVED] {msg}")
 
-                elif isinstance(msg_from_server, LoginResponse):
-                    if msg_from_server.success:
-                        self.controller.login_approved()
-                
-                elif isinstance(msg_from_server, ChannelAddResponse):
-                    if msg_from_server.success:
-                        self.controller.add_channel(
-                            msg_from_server.channel_id,
-                            msg_from_server.channel_name
-                        )
+                    if isinstance(msg, NewMessageNotif):
+                        self.controller.recieve_incoming_msg(msg)
 
+                    elif isinstance(msg, LoginResponse):
+                        if msg.success:
+                            self.controller.login_approved(msg.user_id)
+                    
+                    elif isinstance(msg, ChannelCreateResponse):
+                        if msg.success:
+                            self.controller.create_channel(
+                                msg.channel_id,
+                                msg.channel_name
+                            )
+                    elif isinstance(msg, ChannelJoinResponse):
+                        if msg.success:
+                            self.controller.join_channel(
+                                msg.channel_id,
+                                msg.channel_name
+                            )
+                    elif isinstance(msg, UserJoinNotif):
+                        self.controller.user_join_channel_update(msg.channel_id, msg.username)
+                        
             except (ConnectionResetError, ConnectionAbortedError) as e:
                 logging.error(e)
                 self.close_event.set()

@@ -40,7 +40,7 @@ class NewMessageNotif(ClientMessage):
     sender_name: str
 
 @dataclass
-class FriendRequest(ClientMessage):
+class FriendRequestSent(ClientMessage):
     time_sent: datetime
     
 @dataclass
@@ -57,16 +57,22 @@ class ChannelCreateRequest(ClientMessage):
     channel_name: str
 
 @dataclass
-class ChannelAddResponse(ClientMessage):
+class ChannelCreateResponse(ClientMessage):
+    success: bool
+    channel_id: int
+    channel_name: str
+
+@dataclass
+class ChannelJoinResponse(ClientMessage):
     success: bool
     channel_id: int
     channel_name: str
 
 
 @dataclass
-class ChannelUpdateRequest(ClientMessage):
+class UserJoinNotif(ClientMessage):
     channel_id: int
-    last_updated: datetime
+    username: str
 
 #Auth Messages:
 @dataclass
@@ -80,6 +86,7 @@ class LoginAttempt(AuthMessage):
 @dataclass
 class LoginResponse(AuthMessage):
     success: bool
+    user_id: int
 
 @dataclass
 class SignUpAttempt(AuthMessage):
@@ -96,12 +103,13 @@ class CodeLookUp:
     200: ClientMessage,
     201: TextMessage,
     202: NewMessageNotif,
-    203: FriendRequest,
+    203: FriendRequestSent,
     204: AcceptedFriendRequest,
     205: ChannelJoinRequest,
     206: ChannelCreateRequest,
-    207: ChannelAddResponse,
-    208: ChannelUpdateRequest,
+    207: ChannelCreateResponse,
+    208: ChannelJoinResponse,
+    209: UserJoinNotif,
     300: AuthMessage,
     301: LoginAttempt,
     302: LoginResponse,
@@ -117,12 +125,13 @@ class CodeLookUp:
     ClientMessage: 200,
     TextMessage: 201,
     NewMessageNotif: 202,
-    FriendRequest: 203,
+    FriendRequestSent: 203,
     AcceptedFriendRequest: 204,
     ChannelJoinRequest: 205,
     ChannelCreateRequest: 206,
-    ChannelAddResponse: 207,
-    ChannelUpdateRequest: 208,
+    ChannelCreateResponse: 207,
+    ChannelJoinResponse: 208,
+    UserJoinNotif: 209,
     AuthMessage: 300,
     LoginAttempt: 301,
     LoginResponse: 302,
