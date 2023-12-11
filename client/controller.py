@@ -27,7 +27,8 @@ class Controller:
         self.username: str = None
         self.logged_in: bool = False 
         self.current_channel_id: int = None
-        
+        self.ip = 0
+
         self.suggestion_API = WordSuggestionAPI()
         
         self.outgoing_msgs = []
@@ -99,7 +100,7 @@ class Controller:
         self.core_app.add_channel(channel_id, channel_name)
         self.core_app.channel_frame.add_user(channel_id, self.username)
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
-        
+
     
     def switch_channel(self, channel_id):
         self.core_app.channel_frame.switch_channel(channel_id)
@@ -108,7 +109,8 @@ class Controller:
     def user_join_channel_update(self, channel_id: int, username: str) -> None:
         #rerender if in focus
         self.core_app.channel_frame.add_user(channel_id, username)
-        
+        self.core_app.right_side_frame.user_list_frame.set_users(self.core_app.channel_frame.current_channel_frame.users)
+
 
     def channel_join_request(self, channel_id: int):
         if channel_id not in self.core_app.channel_frame.channel_frames:
@@ -141,14 +143,7 @@ class Controller:
         )
 
     def login_approved(self, user_id: int): 
-        print("LOGGING started")
-        logging.basicConfig(
-        level=logging.INFO, 
-        format=f"{user_id}: %(asctime)s %(levelname)s %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        filename='client.log',
-        )
-        
+               
         self.logged_in = True
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
 

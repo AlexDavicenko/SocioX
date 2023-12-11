@@ -15,7 +15,7 @@ class ChannelFrame(ctk.CTkFrame):
         self.current_channel_id: int = None
 
 
-        self.exit_button = ctk.CTkButton(self, text='Exit')
+        self.exit_button = ctk.CTkButton(self, text='Leave')
         self.exit_button.grid(row = 0, column = 1, sticky= 'ew', padx = 10, pady =10)
 
 

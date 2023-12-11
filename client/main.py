@@ -35,6 +35,13 @@ class App(ctk.CTk):
 
 
 def main() -> None:
+
+    logging.basicConfig(
+        level=logging.INFO, 
+        format=f"%(asctime)s %(levelname)s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        filename='client.log',
+    )
     app: App = App()    
     app.mainloop()
 
