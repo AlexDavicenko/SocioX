@@ -28,7 +28,7 @@ class MySQLConnection:
         self.cnx = mysql.connector.connect(host = "localhost", user = 'root', password = os.getenv('MySQLPassword'))
         self.cursor = self.cnx.cursor(buffered=False)
         self.connect_to_database()
-        return self
+        return self 
     
     def __exit__(self, exc_type: type[BaseException], exc_value: BaseException, trackeback: TracebackType) -> None:
         print("DB Closed")
