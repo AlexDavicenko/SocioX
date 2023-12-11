@@ -3,7 +3,7 @@ import tkinter as tk
 import logging
 
 from copy import copy
-from typing import Dict, List
+from typing import Dict, List, Callable
 
 import sys
 sys.path.append('../')
@@ -19,12 +19,17 @@ from windows.core_app.core_app_entry import CoreAppEntryPointWindow
 from windows.add_channel import AddChannelWindow
 from suggestions.suggestion_API import WordSuggestionAPI
 
+#Seperate controllers into seperate files for each type of controller like 
+#message controller, explore controller and settings controller
+#Same of server side
+
 class Controller:
 
     def __init__(self, root: ctk.CTk) -> None:
         
         self.root = root
         self.username: str = None
+        self.friends: List[str] = []
         self.logged_in: bool = False 
         self.current_channel_id: int = None
         self.ip = 0
@@ -37,14 +42,12 @@ class Controller:
         
         self._setup_frames()
 
-    def add_binding(self, key: str, func: callable):
+    # //// SETUP ////
+
+    def add_binding(self, key: str, func: Callable):
         self.root.bind(key, func)
 
     def _setup_frames(self) -> None:
-
-        
-        self.channel_frames: Dict[int, ctk.Frame] = {}
-
         self.frames: Dict[str, Window] = {} 
         
         #TODO: Solve with enums
@@ -70,6 +73,10 @@ class Controller:
         frame.window_bindings()
         frame.tkraise()
     
+
+    # //// Client ////
+
+
     def recieve_incoming_msg(self, msg: NewMessageNotif):
         #check channel id
         self.core_app.channel_frame.add_message(msg.channel_id, msg.sender_name, msg.time_sent, msg.content)
@@ -81,6 +88,8 @@ class Controller:
             self.outgoing_msgs = []
             return msgs
 
+    # //// Messages ////
+
     def add_outgoing_text_msg(self, content: str) -> None:
         self.outgoing_msgs.append(
             TextMessage(self.current_channel_id, content)
@@ -88,6 +97,8 @@ class Controller:
 
     def add_message_internal(self, content):
         self.core_app.channel_frame.add_message(self.current_channel_id, self.username, datetime.now(), content)
+
+    # //// Channels ////
 
     def channel_create_request(self, channel_name: str):
         self.outgoing_msgs.append(
@@ -100,16 +111,20 @@ class Controller:
         self.core_app.add_channel(channel_id, channel_name)
         self.core_app.channel_frame.add_user(channel_id, self.username)
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
-
+        
     
     def switch_channel(self, channel_id):
+        self.current_channel_id = channel_id
         self.core_app.channel_frame.switch_channel(channel_id)
         self.core_app.right_side_frame.user_list_frame.set_users(self.core_app.channel_frame.current_channel_frame.users)
 
     def user_join_channel_update(self, channel_id: int, username: str) -> None:
         #rerender if in focus
         self.core_app.channel_frame.add_user(channel_id, username)
-        self.core_app.right_side_frame.user_list_frame.set_users(self.core_app.channel_frame.current_channel_frame.users)
+        
+        #If a channel frame is current being viewed
+        if self.current_channel_id == channel_id:
+            self.core_app.right_side_frame.user_list_frame.set_users(self.core_app.channel_frame.message_frame_container.users)
 
 
     def channel_join_request(self, channel_id: int):
@@ -125,13 +140,44 @@ class Controller:
             pass
 
     def create_channel(self, channel_id: int, channel_name: str):
+        add_channel_window: AddChannelWindow = self.frames[WindowTypes.AddChannelWindow]
+        add_channel_window.central_frame.create_channel_frame.channel_name_entry_box.clear()
+        add_channel_window.central_frame.join_channel_frame.channel_id_entry_box.clear()
         self.add_channel(channel_id, channel_name)
 
 
     def join_channel(self, channel_id: int, channel_name: str):
+        add_channel_window: AddChannelWindow = self.frames[WindowTypes.AddChannelWindow]
+        add_channel_window.central_frame.create_channel_frame.channel_name_entry_box.clear()
+        add_channel_window.central_frame.join_channel_frame.channel_id_entry_box.clear()
         self.add_channel(channel_id, channel_name)
 
+    def leave_channel(self):
 
+        cfs = self.core_app.channel_frame.channel_frames
+        self.outgoing_msgs.append(ChannelLeave(self.current_channel_id))
+        cfs.pop(self.current_channel_id)
+        self.core_app.left_side_frame.remove_channel_button(self.current_channel_id)
+        #if other channels exist
+        if cfs.keys():
+            self.switch_channel(list(cfs.keys())[0])
+        
+    def user_left_channel_update(self, channel_id, user_id):
+        #TODO
+        pass
+
+    # //// Friends ////
+    def send_friend_request(self, username: str) -> None:
+        self.outgoing_msgs.append(FriendRequestSent(datetime.now,username))
+    
+    def friend_request_accepted(self, username: str) -> None:
+        self.friends.append(username)
+        
+    def friend_request_recieved(self, username: str) -> None:
+        pass
+
+
+    # //// Login ////
     def attempt_login(self, name: str) -> None:
         self.username = name
         self.core_app.username = name
@@ -147,11 +193,15 @@ class Controller:
         self.logged_in = True
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
 
+    # //// Text Suggestions ////
+
     def get_suggestions(self, prefix: str) -> List[str]:
         return self.suggestion_API.get_suggestion(prefix)
 
     def on_suggestion_press(self, suggestionNo):
         self.core_app.text_bar_frame.on_suggestion_press(suggestionNo=suggestionNo)
+
+    # //// Other ////
 
     def close(self) -> None:
         pass 

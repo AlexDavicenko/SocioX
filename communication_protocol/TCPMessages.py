@@ -42,6 +42,7 @@ class NewMessageNotif(ClientMessage):
 @dataclass
 class FriendRequestSent(ClientMessage):
     time_sent: datetime
+    username: str
     
 @dataclass
 class AcceptedFriendRequest(ClientMessage):
@@ -68,11 +69,19 @@ class ChannelJoinResponse(ClientMessage):
     channel_id: int
     channel_name: str
 
+@dataclass
+class ChannelLeave(ClientMessage):
+    channel_id: int
 
 @dataclass
 class UserJoinNotif(ClientMessage):
     channel_id: int
     username: str
+
+@dataclass
+class UserLeaveNotification(ClientMessage):
+    channel_id: int
+    user_id: int
 
 #Auth Messages:
 @dataclass

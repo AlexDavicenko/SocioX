@@ -20,6 +20,9 @@ class LeftSideFrame(ctk.CTkScrollableFrame):
         self.channel_buttons[channel_id] = btn
         btn.pack(pady = (0,5), side = 'top', expand = True)
     
+    def remove_channel_button(self, channel_id: int): 
+        btn = self.channel_buttons.pop(channel_id)
+        btn.destroy()
 
 class ChannelButton(ctk.CTkButton):
     def __init__(self, master, controller: Controller, channel_id: int, channel_name: str):

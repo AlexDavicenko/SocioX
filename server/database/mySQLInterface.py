@@ -156,6 +156,15 @@ class MySQLConnection:
             ORDER BY m.DateSent ASC
             """, channel_id
         )
+    
+    def remove_user_from_channel(self, channel_id: int, user_id: int):
+        self.__execute_query(
+            """
+            DELETE FROM userchannelconnection as ucc
+            WHERE ucc.UserID = %s
+            AND ucc.ChannelID = %s
+            """, user_id, channel_id
+            )
 
 
     def read_table(self, table_name):

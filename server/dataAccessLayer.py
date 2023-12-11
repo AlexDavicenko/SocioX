@@ -53,7 +53,11 @@ class DataAccessLayer:
     def get_channels_messages(self, channel_id: int):
         with MySQLConnection(self.db_name) as db:
             return db.get_channels_messages(channel_id)
-            
+    
+    def remove_user_from_channel(self, channel_id: int, user_id: int):
+        with MySQLConnection(self.db_name) as db:
+            return db.remove_user_from_channel(channel_id, user_id)
+
 if __name__ == '__main__':
         
     dal = DataAccessLayer('chatapp')

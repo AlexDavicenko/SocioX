@@ -12,11 +12,10 @@ class ChannelFrame(ctk.CTkFrame):
         self.controller = controller
         #ChannelId: ChannelFrame
         self.channel_frames: Dict[int, MessagesFrame] = {}
-        self.current_channel_id: int = None
 
 
-        self.exit_button = ctk.CTkButton(self, text='Leave')
-        self.exit_button.grid(row = 0, column = 1, sticky= 'ew', padx = 10, pady =10)
+        self.leave_button = ctk.CTkButton(self, text='Leave', command = controller.leave_channel)
+        self.leave_button.grid(row = 0, column = 1, sticky= 'ew', padx = 10, pady =10)
 
 
         self.header_label = ctk.CTkLabel(self, text = "")
@@ -45,7 +44,6 @@ class ChannelFrame(ctk.CTkFrame):
     def switch_channel(self, channel_id: int):
         channel_frame = self.channel_frames[channel_id]
         
-        self.controller.current_channel_id = channel_id
         if self.current_channel_frame:
             self.current_channel_frame.unpack()
             self.current_channel_frame.pack_forget()
@@ -78,7 +76,7 @@ class MessagesFrame(ctk.CTkScrollableFrame):
 
         
     def add_message(self, username: str, time_sent: datetime, content: str):
-        message_frame = MessageFrame(self, username, time_sent.strftime('%H:%M:%S'), content)
+        message_frame = MessageFrame(self, self.controller, username, time_sent.strftime('%H:%M:%S'), content)
         if self.channel_id == self.controller.current_channel_id:
             message_frame.pack(expand = True, fill = ctk.X, pady = (10,10))
         self.messages.append(message_frame)
@@ -94,20 +92,22 @@ class MessagesFrame(ctk.CTkScrollableFrame):
 
 
 class MessageFrame(ctk.CTkFrame):
-    def __init__(self, master, username, time, content):
+    def __init__(self, master, controller: Controller, username: str, time: str, content: str ):
         super().__init__(master, border_color = "gray", border_width= 1)
-        
+
         self.USERNAME_FONT = ctk.CTkFont('Helvetica', 16, 'bold')
         self.MESSAGE_FONT = ctk.CTkFont('Helvetica', 12)
+        self.PLUS_FONT = ctk.CTkFont('Helvetica', 15)
 
 
+        self.controller = controller
         self.username = username
         self.time = time
         self.content = content
 
         self.context_frame = ctk.CTkFrame(self, corner_radius = 1)
-
         self.context_frame.pack(expand = True, fill = ctk.X)
+
         self.text_frame = ctk.CTkFrame(self, corner_radius = 1)
         self.text_frame.pack(expand = True, fill = ctk.X)
 
@@ -119,8 +119,21 @@ class MessageFrame(ctk.CTkFrame):
         self.timeLabel = ctk.CTkLabel(self.context_frame, text=time)
         self.timeLabel.pack(side= tk.RIGHT, anchor = "ne", ipadx = 10)
 
+        #If the message sender is not the client
+        if self.username != self.controller.username and self.username not in self.controller.friends:
+            self.friend_request_user_button = ctk.CTkButton(
+                self.context_frame,
+                text="+", 
+                width=20, 
+                height=20, 
+                font = self.PLUS_FONT, 
+                command= lambda : self.controller.add_friend(self.username))
+            self.friend_request_user_button.pack(side = tk.LEFT, anchor = "w", padx = 25)
+
 
         self.textLabel = ctk.CTkLabel(self.text_frame, text=content, justify="left", font = self.MESSAGE_FONT,anchor="w")
         self.textLabel.pack(side= tk.LEFT, fill = tk.X, padx = 10, pady = (0,5), anchor = "w", expand = True)
+
+        #Dynamically allocates the width of the text label warplength based on its width using an event
         self.textLabel.bind('<Configure>', lambda e: self.textLabel.configure(wraplength=self.textLabel.winfo_width()))
 

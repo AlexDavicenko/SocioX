@@ -20,7 +20,11 @@ class Client():
         self.close_event = Event()
         
         self.PORT = 8080
-        self.HOST = "192.168.0.73"
+        #172.20.4.155
+        #192.168.0.73
+        #192.168.0.83
+        #172.20.4.155
+        self.HOST = "192.168.0.83"
         
         if offline_mode: return
         self.server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

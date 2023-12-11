@@ -22,10 +22,6 @@ class CoreAppEntryPointWindow(Window):
 
         self.controller = controller
 
-        self.username = self.controller.username
-
-
-
         self.left_side_frame = LeftSideFrame(self, controller)
         self.left_side_frame.grid(row=0, column=0, padx=5, pady=1, sticky="ns")#rowspan = 2
         self.grid_rowconfigure(0, weight=1)

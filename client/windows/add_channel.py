@@ -37,6 +37,8 @@ class CentralFrame(ctk.CTkFrame):
 
     def back_button_pressed(self, e = None):
         self.controller.switch_frame(WindowTypes.CoreAppEntryPointWindow)
+        self.create_channel_frame.channel_name_entry_box.clear()
+        self.join_channel_frame.channel_id_entry_box.clear()
     
 class JoinChannelFrame(ctk.CTkFrame):
     def __init__(self, master: CentralFrame, controller: Controller):
