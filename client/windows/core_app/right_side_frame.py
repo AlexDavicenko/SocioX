@@ -2,6 +2,7 @@ import customtkinter as ctk
 
 from typing import List, Dict
 from controller_protocol import Controller
+from windows.window_types import WindowTypes
 
 
 class RightSideFrame(ctk.CTkFrame):
@@ -9,13 +10,14 @@ class RightSideFrame(ctk.CTkFrame):
         super().__init__(master, width = 110    )
         self.controller = controller
 
-        self.search_other_buttons = ctk.CTkButton(self, text='Search')
+        self.search_other_buttons = ctk.CTkButton(self, text='Search', command = self.search_button_pressed)
         self.search_other_buttons.pack(side = 'top', fill = 'x', padx = 10, pady = 10)
 
         self.user_list_frame = UserListFrame(self, controller)
         self.user_list_frame.pack(expand = True, fill = 'both')
         
-
+    def search_button_pressed(self, e = None):
+        self.controller.switch_frame(WindowTypes.SearchWindow)
 
 class UserListFrame(ctk.CTkScrollableFrame):
     def __init__(self, master, controller: Controller):

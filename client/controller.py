@@ -17,11 +17,10 @@ from windows.signup import SignUpWindow
 from windows.email_verification import EmailVerificationWindow
 from windows.core_app.core_app_entry import CoreAppEntryPointWindow 
 from windows.add_channel import AddChannelWindow
+from windows.settings import SettingWindow
+from windows.search import SearchWindow
+from windows.password_reset import PasswordResetWindow
 from suggestions.suggestion_API import WordSuggestionAPI
-
-#Seperate controllers into seperate files for each type of controller like 
-#message controller, explore controller and settings controller
-#Same of server side
 
 class Controller:
 
@@ -51,7 +50,7 @@ class Controller:
         self.frames: Dict[str, Window] = {} 
         
         #TODO: Solve with enums
-        for FrameClass in (LoginWindow, SignUpWindow, EmailVerificationWindow, CoreAppEntryPointWindow, AddChannelWindow):
+        for FrameClass in (LoginWindow, SignUpWindow, EmailVerificationWindow, CoreAppEntryPointWindow, AddChannelWindow, SearchWindow, SettingWindow, PasswordResetWindow):
 
             frame = FrameClass(self.root_container, self)
   
