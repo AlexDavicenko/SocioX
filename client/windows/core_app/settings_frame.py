@@ -1,8 +1,6 @@
 import tkinter as tk
 import customtkinter as ctk
 
-from datetime import datetime
-from typing import List, Dict
 from controller_protocol import Controller
 
 from windows.window_types import WindowTypes
@@ -41,4 +39,4 @@ class SettingsFrame(ctk.CTkFrame):
         self.controller.switch_frame(WindowTypes.AddChannelWindow)
 
     def settings_button_clicked(self, e = None):
-        pass
+        self.controller.switch_frame(WindowTypes.SettingWindow)
