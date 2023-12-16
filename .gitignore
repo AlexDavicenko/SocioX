@@ -8,4 +8,14 @@ client/email_verification/credentials.json
 client/email_verification/token.json
 client/local-cache.json
 client/email_verification
+BCryptLibrary/.vs
+BCryptLibrary/x64
+BCryptLibrary/BCryptLibrary.sln
+BCryptLibrary/libtest/BCryptLib.pyproj
+BCryptLibrary/libtestc/build
+BCryptLibrary/libtestc/bcryptCPP.egg-info
+BCryptLibrary/libtestc/x64
+BCryptLibrary/libtestc/libtestc.vcxproj
+BCryptLibrary/libtestc/libtestc.vcxproj.filters
+BCryptLibrary/libtestc/libtestc.vcxproj.user
 .env
