@@ -6,3 +6,4 @@ class WindowTypes:
     EmailVerificationWindow = 'EmailVerificationWindow'
     CoreAppEntryPointWindow = 'CoreAppEntryPointWindow'
     AddChannelWindow = 'AddChannelWindow'
+    

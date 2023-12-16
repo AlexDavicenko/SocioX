@@ -24,7 +24,7 @@ class Client():
         #192.168.0.73
         #192.168.0.83
         #172.20.4.155
-        self.HOST = "192.168.0.83"
+        self.HOST = "192.168.0.73"
         
         if offline_mode: return
         self.server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

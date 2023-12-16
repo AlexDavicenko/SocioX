@@ -64,7 +64,7 @@ class JoinChannelFrame(ctk.CTkFrame):
             pass
 
 class CreateChannelFrame(ctk.CTkFrame): 
-    def __init__(self, master, controller: Controller):
+    def __init__(self, master: CentralFrame, controller: Controller):
         super().__init__(master, fg_color=['gray86', 'gray17'])
 
         self.controller = controller
