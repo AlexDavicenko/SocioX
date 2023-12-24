@@ -177,7 +177,7 @@ class MySQLConnection:
             AND (LOWER(Firstname) LIKE %s
             OR LOWER(Username) LIKE %s
             )
-            """, user_id, search_term, search_term, search_term
+            """, user_id, search_term, search_term
             )      
 
     def read_table(self, table_name):

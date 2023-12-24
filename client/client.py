@@ -84,6 +84,11 @@ class Client():
                     
                     elif isinstance(msg, SearchReponse):
                         self.controller.search_response(msg.response_data)
+                    elif isinstance(msg, SignUpResponse):
+                        if msg.success:
+                            #Same procedure as login
+                            self.controller.login_approved(msg.user_id)
+
 
             except (ConnectionResetError, ConnectionAbortedError) as e:
                 logging.error(e)

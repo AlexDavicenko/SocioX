@@ -19,8 +19,8 @@ class AddChannelWindow(Window):
 
 
 class CentralFrame(ctk.CTkFrame):
-    def __init__(self, master: AddChannelWindow, controller: Controller):
-        super().__init__(master, fg_color=['gray86', 'gray17'])
+    def __init__(self, parent: AddChannelWindow, controller: Controller):
+        super().__init__(parent, fg_color=['gray86', 'gray17'])
         self.controller = controller
 
         self.join_channel_frame = JoinChannelFrame(self, controller)
@@ -41,8 +41,8 @@ class CentralFrame(ctk.CTkFrame):
         self.join_channel_frame.channel_id_entry_box.clear()
     
 class JoinChannelFrame(ctk.CTkFrame):
-    def __init__(self, master: CentralFrame, controller: Controller):
-        super().__init__(master, fg_color=['gray86', 'gray17'])
+    def __init__(self, parent: CentralFrame, controller: Controller):
+        super().__init__(parent, fg_color=['gray86', 'gray17'])
         self.controller = controller
 
         self.join_channel_label = ctk.CTkLabel(self, text = 'Enter a channel ID to join a channel', font=('TkDefaultFont', 16))
@@ -64,8 +64,8 @@ class JoinChannelFrame(ctk.CTkFrame):
             pass
 
 class CreateChannelFrame(ctk.CTkFrame): 
-    def __init__(self, master: CentralFrame, controller: Controller):
-        super().__init__(master, fg_color=['gray86', 'gray17'])
+    def __init__(self, parent: CentralFrame, controller: Controller):
+        super().__init__(parent, fg_color=['gray86', 'gray17'])
 
         self.controller = controller
         self.join_channel_label = ctk.CTkLabel(self, text = 'Create your own channel', font=('TkDefaultFont', 16))

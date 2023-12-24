@@ -138,9 +138,8 @@ class Controller:
             user_id = self.dal.get_user_id(msg.username)            
             if user_id == None:
                 self.add_message_by_id(client_id, LoginResponse(
-                    ip=0,
                     success=False,
-                    user_id = user_id
+                    user_id = None
                 ))
             else:
                 #save the client_id -> user_id mapping
@@ -148,7 +147,6 @@ class Controller:
                 self.user_id_client_id_map[user_id] = client_id
 
                 self.add_message_by_id(client_id, LoginResponse(
-                    ip=0,
                     user_id= user_id,
                     success=True
                 ))
@@ -219,3 +217,21 @@ class Controller:
             self.add_message_by_id(client_id, SearchReponse(
                 response_data = responses
             ))
+        elif isinstance(msg, SignUpAttempt):
+            self.dal.add_user(
+                msg.username,
+                msg.firstname,
+                msg.lastname,
+                msg.email,
+                msg.dob
+            )
+
+            user_id = self.dal.get_user_id(msg.username)
+
+            self.add_message_by_id(client_id, SignUpResponse(
+                success= True,
+                user_id = user_id
+            ))        
+            #save the client_id -> user_id mapping
+            self.client_id_user_id_map[client_id] = user_id
+            self.user_id_client_id_map[user_id] = client_id

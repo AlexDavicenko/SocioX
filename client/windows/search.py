@@ -77,10 +77,8 @@ class ResultsFrame(ctk.CTkScrollableFrame):
         for result in self.results_list:
             result.pack_forget()
         self.results_list = []
-        print(result_data)
         for result in result_data:
             user_result_frame = UserResultFrame(self, self.controller, result["Username"], result["Firstname"], result["AccountAge"])
-            print(result["Username"], result["Firstname"], result["AccountAge"])
             self.results_list.append(user_result_frame)
             user_result_frame.pack(expand = True, side = "top", fill = 'x', padx = (0,25))
 
@@ -110,7 +108,7 @@ class UserResultFrame(ctk.CTkFrame):
 
         self.username_label.grid(padx = 10, pady = 5, column = 1, row = 0,)
         self.add_friend_button.grid(padx = 10, column = 0, row = 0,)
-        self.account_age_label.grid(padx = 0, pady = 5, column = 3, row = 0,)
+        self.account_age_label.grid(padx = 0, pady = 5, column = 3, row = 0,sticky = 'e')
         self.firstname_label.grid(padx = 10, pady = 10, column = 0, row = 1,)
 
     def add_friend(self):

@@ -94,7 +94,7 @@ class SearchReponse(ClientMessage):
 #Auth Messages:
 @dataclass
 class AuthMessage(TCPMessage):
-    ip: int
+    pass
 
 @dataclass
 class LoginAttempt(AuthMessage):
@@ -107,7 +107,18 @@ class LoginResponse(AuthMessage):
 
 @dataclass
 class SignUpAttempt(AuthMessage):
-    pass
+    username: str
+    firstname: str
+    lastname: str
+    email: str
+    password: str
+    dob: datetime
+
+
+@dataclass
+class SignUpResponse(AuthMessage):
+    success: bool
+    user_id: int
 
 
 

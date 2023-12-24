@@ -31,7 +31,6 @@ class Controller:
         self.friends: List[str] = []
         self.logged_in: bool = False 
         self.current_channel_id: int = None
-        self.ip = 0
 
         self.suggestion_API = WordSuggestionAPI()
         
@@ -192,7 +191,6 @@ class Controller:
         self.core_app.username = name
         self.outgoing_msgs.append(
             LoginAttempt(
-            ip = 0,
             username=name
             )
         )
@@ -205,6 +203,33 @@ class Controller:
     def login_failed(self):
         login_window: LoginWindow = self.frames[WindowTypes.LoginWindow]
         login_window.login_failed()
+
+
+    # //// Sign up ////
+    def signup_request(self) -> None:
+        signup_window: SignUpWindow = self.frames[WindowTypes.SignUpWindow]
+        month_str = signup_window.detail_entry_frame.date_entry_frame.month_option_menu.get()
+        day = int(signup_window.detail_entry_frame.date_entry_frame.day_entry_box.get())
+        year = int(signup_window.detail_entry_frame.date_entry_frame.year_entry_box.get())
+        month = signup_window.detail_entry_frame.date_entry_frame.MONTHS.index(month_str) + 1
+        username = signup_window.detail_entry_frame.top_entry_frame.username_entry_box.get()
+        self.outgoing_msgs.append(
+            SignUpAttempt(
+                username = username,
+                firstname = signup_window.detail_entry_frame.top_entry_frame.firstname_entry_box.get(),
+                lastname = signup_window.detail_entry_frame.top_entry_frame.lastname_entry_box.get(),
+                email = signup_window.detail_entry_frame.top_entry_frame.email_entry_box.get(),
+                password = signup_window.detail_entry_frame.top_entry_frame.password_entry_box.get(),
+                dob = datetime(year, month, day)
+            )
+        )
+        
+        self.username = username
+        self.core_app.username = username
+
+    def signup_response(self) -> None: 
+        self.logged_in = True
+
 
     # //// Text Suggestions ////
 

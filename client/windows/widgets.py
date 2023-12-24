@@ -5,8 +5,8 @@ import tkinter as tk
 
 #add centered option with string formatting like in the blad guys video
 class PlaceHolderEntry(ctk.CTkEntry):
-    def __init__(self, master: ctk.CTkFrame, placeholder: str, show: str = "", *args, **kwargs) -> None:
-        super().__init__(master, *args, **kwargs)
+    def __init__(self, parent: ctk.CTkFrame, placeholder: str, show: str = "", *args, **kwargs) -> None:
+        super().__init__(parent, *args, **kwargs)
 
         self.insert("0", placeholder)
         self.bind("<FocusIn>", self._clear_placeholder)

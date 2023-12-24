@@ -27,7 +27,7 @@ class UserListFrame(ctk.CTkScrollableFrame):
         self.username_labels: List[ctk.CTkLabel] = []
         
         
-        self.title_label = ctk.CTkLabel(self, text = "Users")
+        self.title_label = ctk.CTkLabel(self, text = "Users", font=('TkDefaultFont', 14))
         self.title_label.pack()
 
 

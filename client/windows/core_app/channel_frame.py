@@ -18,7 +18,7 @@ class ChannelFrame(ctk.CTkFrame):
         self.leave_button.grid(row = 0, column = 1, sticky= 'ew', padx = 10, pady =10)
 
 
-        self.header_label = ctk.CTkLabel(self, text = "")
+        self.header_label = ctk.CTkLabel(self, text = "", font=('TkDefaultFont', 14))
         self.header_label.grid(row = 0, column = 0, sticky= 'ew')
 
         self.message_frame_container = ctk.CTkFrame(self)
@@ -49,7 +49,7 @@ class ChannelFrame(ctk.CTkFrame):
             self.current_channel_frame.pack_forget()
         self.current_channel_frame = channel_frame
 
-        self.header_label.configure(text =f"ChannelName:{channel_frame.channel_name} {' '*20} ChannelID: {channel_id} {' '*20} Your Name: { self.controller.username}")
+        self.header_label.configure(text =f"Your Name: { self.controller.username} {' '*20} Channel name: {channel_frame.channel_name} {' '*20} Channel ID: {channel_id}")
         channel_frame.pack_all()
         channel_frame.pack(expand = True, fill = 'both')
         channel_frame.tkraise()

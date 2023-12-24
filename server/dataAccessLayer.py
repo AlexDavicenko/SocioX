@@ -15,14 +15,12 @@ class DataAccessLayer:
     def __init__(self, db_name, gdb_name) -> None:
         self.db_name = db_name
         self.gdb_name = gdb_name
-        self.graph_db = Graph()
-        
+    
    
-
-    def add_user(self, username) -> None:
+    def add_user(self, username: str, firstname: str, lastname: str, email: str, date_of_birth: datetime) -> None:
         with MySQLConnection(self.db_name) as db:
-            db.add_user(username, "TEST", "TEST", "TEST", Region.EUROPE, datetime.now())
-        with GraphDBConnection(self.db_name) as gdb:
+            db.add_user(username, firstname, lastname, email, Region.EUROPE, date_of_birth)
+        with GraphDBConnection(self.gdb_name) as gdb:
             gdb.addUser(username)
 
 
