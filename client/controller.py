@@ -167,13 +167,23 @@ class Controller:
 
     # //// Friends ////
     def send_friend_request(self, username: str) -> None:
-        self.outgoing_msgs.append(FriendRequestSent(datetime.now,username))
+        self.outgoing_msgs.append(FriendRequestSent(datetime.now(),username))
     
     def friend_request_accepted(self, username: str) -> None:
         self.friends.append(username)
         
     def friend_request_recieved(self, username: str) -> None:
         pass
+
+    # //// Search ////
+    def search_request(self, search: str) -> None:
+        self.outgoing_msgs.append(
+            SearchRequest(search)
+        )
+
+    def search_response(self, response_data: List) -> None:
+        search_window: SearchWindow = self.frames[WindowTypes.SearchWindow]
+        search_window.central_search_frame.results_frame.set_results(response_data)
 
 
     # //// Login ////
@@ -191,6 +201,10 @@ class Controller:
                
         self.logged_in = True
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
+
+    def login_failed(self):
+        login_window: LoginWindow = self.frames[WindowTypes.LoginWindow]
+        login_window.login_failed()
 
     # //// Text Suggestions ////
 

@@ -165,7 +165,20 @@ class MySQLConnection:
             AND ucc.ChannelID = %s
             """, user_id, channel_id
             )
+    
+    def search_by_prefix(self, user_id, prefix: str) -> List[Dict[str, Any]]:
+        search_term = f"%{prefix.lower()}%"
 
+        return self.__execute_query(
+            """
+            SELECT UserID, Username, Firstname, Region, DateAccountCreated
+            FROM Users
+            WHERE UserID != %s
+            AND (LOWER(Firstname) LIKE %s
+            OR LOWER(Username) LIKE %s
+            )
+            """, user_id, search_term, search_term, search_term
+            )      
 
     def read_table(self, table_name):
         return self.__execute_query(f""" SELECT * FROM {table_name}""")

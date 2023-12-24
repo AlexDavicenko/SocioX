@@ -1,19 +1,31 @@
 from datetime import datetime
+import logging
 
 from database.mySQLInterface import MySQLConnection
+from database.graphDBInterface import GraphDBConnection
 from database.region import Region
+from database.databaseReset import reset_database
+from database.databaseMockDataFill import fill_data
+
+from GraphDB import Graph
 
 from typing import Union
 
 class DataAccessLayer:
-    def __init__(self, db_name) -> None:
+    def __init__(self, db_name, gdb_name) -> None:
         self.db_name = db_name
+        self.gdb_name = gdb_name
+        self.graph_db = Graph()
+        
    
 
     def add_user(self, username) -> None:
         with MySQLConnection(self.db_name) as db:
             db.add_user(username, "TEST", "TEST", "TEST", Region.EUROPE, datetime.now())
-        
+        with GraphDBConnection(self.db_name) as gdb:
+            gdb.addUser(username)
+
+
     def add_channel(self, channel_name: str, owner_id: int) -> int:
         with MySQLConnection(self.db_name) as db:
             dt = datetime.now()
@@ -58,28 +70,18 @@ class DataAccessLayer:
         with MySQLConnection(self.db_name) as db:
             return db.remove_user_from_channel(channel_id, user_id)
 
-if __name__ == '__main__':
+    def get_user_suggestions(self, user_id):
         
-    dal = DataAccessLayer('chatapp')
+        #TODO
+        pass 
 
-    dal.add_user("User1")
-    dal.add_user("User2")
-    dal.add_user("User3")
-    dal.add_user("User4")
+    def search_request(self,user_id, content):
+        with MySQLConnection(self.db_name) as db:
+            return db.search_by_prefix(user_id, content)
 
-    #user2_id = dal.get_user_id('User2')
-    #user3_id = dal.get_user_id('User3')
-    
-    #print(user2_id)
-    #channel1_id = dal.add_channel('Channel1', user2_id)
-    #channel1_id = 3
-    #print(channel1_id)
-    
-    #dal.add_user_channel_connection(channel1_id, user2_id)
-    #dal.add_user_channel_connection(channel1_id, user3_id)
+    def reset_db(self):
+        reset_database(self.db_name, self.gdb_name)
 
-    
+    def fill_with_mock_data(self):
+        fill_data(self.db_name, self.gdb_name)
 
-    #print(dal.get_channel_users(channel1_id))
-    
-    #dal.get_user_channels(0)

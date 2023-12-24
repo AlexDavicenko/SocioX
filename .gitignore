@@ -32,4 +32,8 @@ GraphLibrary/GraphLibCpp/GraphLibCpp.vcxproj
 GraphLibrary/GraphLibCpp/GraphLibCpp.vcxproj.filters
 GraphLibrary/GraphLibCpp/GraphLibCpp.vcxproj.user
 
+server/chatapp.csv
+server/database/graphdbtest.csv
+
 .env
+.vscode

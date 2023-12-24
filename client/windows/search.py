@@ -13,25 +13,55 @@ class SearchWindow(Window):
         super().__init__(parent)
         self.controller = controller
 
+        self.grid_rowconfigure(0,weight=5)
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_columnconfigure(1,weight=5)
+        self.grid_columnconfigure(2,weight=1)
 
+
+
+        self.central_search_frame = CentralSearchFrame(self, controller)
+        self.central_search_frame.grid(column = 0, row = 0, sticky = 'nsew', columnspan = 3)
+
+        self.back_button = ctk.CTkButton(self, text = 'Back', command = self.back_button_pressed, width= 120, height = 40)
+        self.back_button.grid(padx = 10, pady = 10, column = 2, row = 1) 
+
+        self.get_suggestions_button = ctk.CTkButton(self, text = 'Generate Suggestions', command = self.get_suggestions_button_pressed, width= 120, height = 40)
+        self.get_suggestions_button.grid(padx = 10, pady = 10, column = 0, row = 1)
+
+
+    def back_button_pressed(self, e = None):
+        self.controller.switch_frame(WindowTypes.CoreAppEntryPointWindow)
+
+
+    def get_suggestions_button_pressed(self, e = None): 
+        pass
 
 class CentralSearchFrame(ctk.CTkFrame):
     def __init__(self, parent: SearchWindow, controller: Controller):
-        super().__init__(parent, fg_color=['gray86', 'gray17'])
+        super().__init__(parent, fg_color=['gray86', 'gray17']) 
         self.controller = controller
 
 
-        self.user_search_bar = PlaceHolderEntry(self, placeholder="Start typing a username...")
-        self.user_search_bar.pack(expand = True, fill = 'y')
 
-        self.search_button = ctk.CTkButton(self, )
+        self.grid_rowconfigure(1,weight=1)
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_columnconfigure(1,weight=1)
+
+
+        self.user_search_bar = PlaceHolderEntry(self, placeholder="Start typing a username...", width = 300, height = 40)
+        self.user_search_bar.grid(padx = 10, pady = (10,0), column = 0, row = 0, sticky = "e")
+
+        self.search_button = ctk.CTkButton(self, text = 'Search', command = self.search_button_pressed, width= 120, height = 40)
+        self.search_button.grid(padx = 10, pady = (10,0), column = 1, row = 0,  sticky = "w")
 
         self.results_frame = ResultsFrame(self, controller)
-        self.results_frame.pack(expand = True, fill = 'both')
+        self.results_frame.grid(padx = 10, column = 0, row = 1, columnspan = 2, sticky = "nsew") 
+
+
 
     def search_button_pressed(self, e = None):
-        #TODO
-        pass
+        self.controller.search_request(self.user_search_bar.get())
 
 
 class ResultsFrame(ctk.CTkScrollableFrame):
@@ -41,35 +71,47 @@ class ResultsFrame(ctk.CTkScrollableFrame):
         self.results_list: List[UserResultFrame] = []
 
 
-    #List[(UserID, Username, AccountAge)]
+    #List[{Username, Firstname, AccountAge}]
     def set_results(self, result_data: List):
         
         for result in self.results_list:
             result.pack_forget()
         self.results_list = []
-        for user_id, username, account_age in zip(result_data):
-            user_result_frame = UserResultFrame(self, self.controller, user_id, username, account_age)
+        print(result_data)
+        for result in result_data:
+            user_result_frame = UserResultFrame(self, self.controller, result["Username"], result["Firstname"], result["AccountAge"])
+            print(result["Username"], result["Firstname"], result["AccountAge"])
             self.results_list.append(user_result_frame)
-            user_result_frame.pack(expand = True, fill = "x")
+            user_result_frame.pack(expand = True, side = "top", fill = 'x', padx = (0,25))
+
 
 
 
 
 class UserResultFrame(ctk.CTkFrame):
-    def __init__(self, parent: ResultsFrame, controller: Controller, user_id, username, account_age):
-        super().__init__(parent, fg_color=['gray86', 'gray17'])
+    def __init__(self, parent: ResultsFrame, controller: Controller, username, firstname, account_age):
+        super().__init__(parent)
+
         self.controller = controller
-        self.user_id = user_id
+        self.firstname = firstname
         self.username = username
         self.account_age = account_age
+    
+
+        self.username_label = ctk.CTkLabel(self, text=username, font=('TkDefaultFont', 12))
+        self.firstname_label = ctk.CTkLabel(self, text=firstname, font=('TkDefaultFont', 12))
+        self.account_age_label = ctk.CTkLabel(self, text=account_age, font=('TkDefaultFont', 12))
+        self.add_friend_button = ctk.CTkButton(self, text="Add", command=self.add_friend, height = 15, width = 50)
+        if username in self.controller.friends:
+            self.add_friend_button.config(state ="disabled")
 
 
-class BottomButtonFrame(ctk.CTkFrame):
-    def __init__(self, parent: SearchWindow, controller: Controller):
-        super().__init__(parent, fg_color=['gray86', 'gray17'])
-        self.controller = controller
+        self.grid_columnconfigure(2,weight=1)
 
-        self.back_button = ctk.CTkButton(self, text = 'Back', command = self.back_button_pressed, width= 120, height = 40)
-        self.back_button.pack(expand = True, fill = 'both', )
-    def back_button_pressed(self, e = None):
-        pass
+        self.username_label.grid(padx = 10, pady = 5, column = 1, row = 0,)
+        self.add_friend_button.grid(padx = 10, column = 0, row = 0,)
+        self.account_age_label.grid(padx = 0, pady = 5, column = 3, row = 0,)
+        self.firstname_label.grid(padx = 10, pady = 10, column = 0, row = 1,)
+
+    def add_friend(self):
+        self.controller.send_friend_request(self.username)

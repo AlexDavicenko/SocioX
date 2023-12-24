@@ -64,6 +64,8 @@ class Client():
                     elif isinstance(msg, LoginResponse):
                         if msg.success:
                             self.controller.login_approved(msg.user_id)
+                        else:
+                            self.controller.login_failed()
                     
                     elif isinstance(msg, ChannelCreateResponse):
                         if msg.success:
@@ -79,7 +81,10 @@ class Client():
                             )
                     elif isinstance(msg, UserJoinNotif):
                         self.controller.user_join_channel_update(msg.channel_id, msg.username)
-                        
+                    
+                    elif isinstance(msg, SearchReponse):
+                        self.controller.search_response(msg.response_data)
+
             except (ConnectionResetError, ConnectionAbortedError) as e:
                 logging.error(e)
                 self.close_event.set()

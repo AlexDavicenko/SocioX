@@ -9,7 +9,7 @@ struct Node {
 };
 
 struct Item {
-    int priority;
+    float priority;
     Node* value;
 };
 
@@ -33,9 +33,9 @@ public:
 
     void insert(Item item);
 
-    void print_heap();
+    void printHeap();
 
-    bool is_empty();
+    bool isEmpty();
 };
 
 

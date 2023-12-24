@@ -1,6 +1,7 @@
 import copy
 import logging
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 from typing import List, Dict, Any
 from dataAccessLayer import DataAccessLayer
@@ -17,7 +18,8 @@ class Controller:
         self.client_ids: List[int] = []
         self.client_id_user_id_map: Dict[int, int] = {}
         self.user_id_client_id_map: Dict[int, int] = {}
-        self.dal = DataAccessLayer('chatapp')
+        self.dal = DataAccessLayer('chatapp', 'chatapp.csv')
+        
 
         #Client ID: List[Message Object]
         self.messages: Dict[int, List[TCPMessage]]= {}
@@ -117,7 +119,6 @@ class Controller:
                 channel_name = channel['ChannelName']
             ))
 
-            #TODO: 
             self.update_user_on_channel_messages(client_id, channel_id)
             self.update_user_on_channel_members(client_id, channel_id)
 
@@ -195,3 +196,26 @@ class Controller:
                 channel_name= channel_data['ChannelName']
             ))
 
+        elif isinstance(msg, SearchRequest):
+            RESPONSE_LIMIT = 10
+            user_id = self.client_id_user_id_map[client_id]
+            responses = self.dal.search_request(user_id, msg.content)[:RESPONSE_LIMIT]
+            
+            for response in responses:
+                response_user_id = response.pop('UserID', None)
+                    
+                account_created_date = response.pop("DateAccountCreated", None)
+                account_age = relativedelta(datetime.now(), account_created_date)
+
+                if account_age.hours:
+                    account_age_formatted = f"Account created: {account_age.hours} hours, and {account_age.minutes} minutes ago"
+                elif account_age.minutes:
+                    account_age_formatted = f"Account created: {account_age.minutes} minutes, and {account_age.seconds} seconds ago"
+                else:
+                    account_age_formatted = f"Account created: {account_age.seconds} seconds ago"
+
+                response["AccountAge"] = account_age_formatted
+
+            self.add_message_by_id(client_id, SearchReponse(
+                response_data = responses
+            ))

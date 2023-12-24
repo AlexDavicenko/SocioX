@@ -83,6 +83,14 @@ class UserLeaveNotification(ClientMessage):
     channel_id: int
     user_id: int
 
+@dataclass
+class SearchRequest(ClientMessage):
+    content: str
+
+@dataclass
+class SearchReponse(ClientMessage):
+    response_data: list
+
 #Auth Messages:
 @dataclass
 class AuthMessage(TCPMessage):
@@ -147,23 +155,5 @@ class CodeLookUp:
     SignUpAttempt: 303
 
     }
-
-"""
-c, t =  CodeLookUp.TCPMessageClassToMessageCode[TCPMessage], TextMessage(10,32)
-
-
-pickled = pickle.dumps((c, t))
-print(pickled)
-
-# pickled is now a bytes object that contains the pickled representation of data
-print(pickled.__sizeof__())
-print(type(pickled))
-
-
-
-restored = pickle.loads(pickled)
-print(restored)
-"""
-
 
 

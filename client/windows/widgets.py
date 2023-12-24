@@ -16,17 +16,26 @@ class PlaceHolderEntry(ctk.CTkEntry):
         
         
     def _clear_placeholder(self, e: tk.Event = None) -> None:
-
-        if self.get() == self.placeholder:
+        if super().get() == self.placeholder:
             self.configure(show = self.show_char)
             self.delete(0, tk.END)
 
 
     def _add_placeholder(self, e: tk.Event = None) -> None:
-        if not self.get():
+        if not super().get():
             self.configure(show = "")
             self.insert(0, self.placeholder)
 
     def clear(self, e: tk.Event = None) -> None:
         self.delete(0, tk.END)
         self.insert(0, self.placeholder)
+
+    def get_raw(self):
+        return super().get()
+
+    def get(self):
+        
+        data = super().get()
+        if data == self.placeholder:
+            return ""
+        return data
