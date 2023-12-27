@@ -20,26 +20,30 @@ from windows.add_channel import AddChannelWindow
 from windows.settings import SettingWindow
 from windows.search import SearchWindow
 from windows.password_reset import PasswordResetWindow
-from suggestions.suggestion_API import WordSuggestionAPI
+from suggestions.word_suggestion_API import WordSuggestionAPI
 
 class Controller:
 
     def __init__(self, root: ctk.CTk) -> None:
         
         self.root = root
+        self.user_id: int = None
         self.username: str = None
         self.firstname: str = None
-        self.lastname: str = None
+        self.lastname: str = None    
+        self.email: str = None
+        self.dob: datetime = None
+        self.account_created: datetime = None    
+        self.logged_in: bool = False 
+
+        self.current_channel_id: int = None
+        self.word_suggestion_API = WordSuggestionAPI()
+
         self.friends: List[str] = []
         self.outgoing_friend_requests: List[str] = []
-        self.logged_in: bool = False 
-        self.current_channel_id: int = None
-
-        self.suggestion_API = WordSuggestionAPI()
-        
         self.outgoing_msgs = []
 
-        self.root_container = ctk.CTkFrame(root) 
+
         
         self._setup_frames()
 
@@ -49,6 +53,7 @@ class Controller:
         self.root.bind(key, func)
 
     def _setup_frames(self) -> None:
+        self.root_container = ctk.CTkFrame(self.root) 
         self.frames: Dict[str, Window] = {} 
         
         #TODO: Solve with enums
@@ -253,19 +258,25 @@ class Controller:
             )
         )
 
-    def login_approved(self):
+    def login_approved(self, user_id: int, username: str, firstname: str, lastname: str, email: str, dob: datetime, account_created: datetime) -> None:
+        self.user_id = user_id
+        self.username = username
+        self.firstname = firstname
+        self.lastname = lastname
+        self.email = email
+        self.dob = dob
+        self.account_created = account_created
         self.logged_in = True
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
 
     def login_failed(self):
-        login_window: LoginWindow = self.frames[WindowTypes.LoginWindow]
-        login_window.login_failed()
+        self.login_window.login_failed()
 
 
     # //// Sign up ////
     def signup_request(self) -> None:
-        signup_window: SignUpWindow = self.frames[WindowTypes.SignUpWindow]
-        detail_entry_frame = signup_window.detail_entry_frame
+        detail_entry_frame = self.signup_window.detail_entry_frame
+
         month_str = detail_entry_frame.date_entry_frame.month_option_menu.get()
         day = int(detail_entry_frame.date_entry_frame.day_entry_box.get())
         year = int(detail_entry_frame.date_entry_frame.year_entry_box.get())
@@ -273,13 +284,14 @@ class Controller:
         username = detail_entry_frame.top_entry_frame.username_entry_box.get()
         firstname = detail_entry_frame.top_entry_frame.firstname_entry_box.get()
         lastname = detail_entry_frame.top_entry_frame.lastname_entry_box.get()
+
         self.outgoing_msgs.append(
             SignUpAttempt(
                 username = username,
                 firstname = firstname,
                 lastname = lastname,
-                email = signup_window.detail_entry_frame.top_entry_frame.email_entry_box.get(),
-                password = signup_window.detail_entry_frame.top_entry_frame.password_entry_box.get(),
+                email = detail_entry_frame.top_entry_frame.email_entry_box.get(),
+                password = detail_entry_frame.top_entry_frame.password_entry_box.get(),
                 dob = datetime(year, month, day)
             )
         )
@@ -296,7 +308,7 @@ class Controller:
     # //// Text Suggestions ////
 
     def get_suggestions(self, prefix: str) -> List[str]:
-        return self.suggestion_API.get_suggestion(prefix)
+        return self.word_suggestion_API.get_suggestion(prefix)
 
     def on_suggestion_press(self, suggestionNo):
         self.core_app.text_bar_frame.on_suggestion_press(suggestionNo=suggestionNo)

@@ -126,6 +126,12 @@ class LoginAttempt(AuthMessage):
 class LoginResponse(AuthMessage):
     success: bool
     user_id: int
+    username: str
+    firstname: str
+    lastname: str
+    email: str
+    dob: datetime
+    account_created: datetime
 
 @dataclass
 class SignUpAttempt(AuthMessage):
@@ -135,13 +141,6 @@ class SignUpAttempt(AuthMessage):
     email: str
     password: str
     dob: datetime
-
-
-@dataclass
-class SignUpResponse(AuthMessage):
-    success: bool
-    user_id: int
-
 
 
 class CodeLookUp:

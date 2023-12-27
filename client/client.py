@@ -58,50 +58,42 @@ class Client():
                 for msg in msgs:                  
                     logging.info(f"[MESSAGE RECEIVED] {msg}")
 
-                    if isinstance(msg, NewMessageNotif):
-                        self.controller.recieve_incoming_msg(msg)
-
-                    elif isinstance(msg, LoginResponse):
-                        if msg.success:
-                            self.controller.login_approved()
-                        else:
-                            self.controller.login_failed()
-                    
-                    elif isinstance(msg, ChannelCreateResponse):
-                        if msg.success:
-                            self.controller.create_channel(
-                                msg.channel_id,
-                                msg.channel_name
-                            )
-                    elif isinstance(msg, ChannelJoinResponse):
-                        if msg.success:
-                            self.controller.join_channel(
-                                msg.channel_id,
-                                msg.channel_name
-                            )
-                    elif isinstance(msg, ChannelLeaveNotif):
-                        self.controller.user_left_channel_update(msg.channel_id, msg.username)
-
-                    elif isinstance(msg, UserJoinNotif):
-                        self.controller.user_join_channel_update(msg.channel_id, msg.username, msg.firstname, msg.lastname)
-                    
-                    elif isinstance(msg, SearchReponse):
-                        self.controller.search_response(msg.response_data)
-                    elif isinstance(msg, SignUpResponse):
-                        if msg.success:
-                            #Same procedure as login
-                            self.controller.login_approved()
-                    elif isinstance(msg, FriendRequestNotif):
-                        self.controller.friend_request_recieved(msg.username, msg.firstname, msg.lastname)
-
-                    elif isinstance(msg, FriendRemoval):
-                        self.controller.remove_friend_notif(msg.username)
-
-                    elif isinstance(msg, FriendRequestDecision):
-                        self.controller.friend_request_decision(msg.username, msg.success)
-
-                    elif isinstance(msg, FriendStatusNotif):
-                        self.controller.friend_status_notif(msg.username, msg.firstname, msg.lastname, msg.decision)
+                    match msg:
+                        case NewMessageNotif():
+                            self.controller.recieve_incoming_msg(msg)
+                        case LoginResponse():
+                            if msg.success:
+                                self.controller.login_approved(msg.user_id, msg.username, msg.firstname, msg.lastname, msg.email, msg.dob, msg.account_created)
+                            else:
+                                self.controller.login_failed()
+                        case ChannelCreateResponse():
+                            if msg.success:
+                                self.controller.create_channel(
+                                    msg.channel_id,
+                                    msg.channel_name
+                                )
+                        case ChannelJoinResponse():
+                            if msg.success:
+                                self.controller.join_channel(
+                                    msg.channel_id,
+                                    msg.channel_name
+                                )
+                        case ChannelLeaveNotif():
+                            self.controller.user_left_channel_update(msg.channel_id, msg.username)
+                        case UserJoinNotif():
+                            self.controller.user_join_channel_update(msg.channel_id, msg.username, msg.firstname, msg.lastname)
+                        case SearchReponse():
+                            self.controller.search_response(msg.response_data)
+                        case FriendRequestNotif():
+                            self.controller.friend_request_recieved(msg.username, msg.firstname, msg.lastname)
+                        case FriendRemoval():
+                            self.controller.remove_friend_notif(msg.username)
+                        case FriendRequestDecision():
+                            self.controller.friend_request_decision(msg.username, msg.success)
+                        case FriendStatusNotif():
+                            self.controller.friend_status_notif(msg.username, msg.firstname, msg.lastname, msg.decision)
+                        case _:
+                            pass
 
             except (ConnectionResetError, ConnectionAbortedError) as e:
                 logging.error(e)
@@ -122,9 +114,6 @@ class Client():
 
 
     def start(self):
-
-        #TODO: 
-        #   split into different files and classes
         Thread(target=self.user_input, args=()).start()
         Thread(target=self.server_messages, args=()).start()
     
