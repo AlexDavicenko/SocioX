@@ -6,7 +6,7 @@ import logging
 import mysql.connector
 import mysql.connector.errorcode
 
-from typing import TypeVar, List, Dict, Any
+from typing import TypeVar, List, Dict, Any, Tuple
 from types import TracebackType
 from datetime import datetime
 
@@ -82,7 +82,7 @@ class MySQLConnection:
             """, channel_name, self.convert_datetime_format(created_datetime), owner_id
         )
     
-    def get_user(self, username) -> List[Dict[str, Any]]:
+    def get_user_id(self, username) -> List[Dict[str, Any]]:
         return self.__execute_query(
             f"""
             SELECT UserID 
@@ -91,7 +91,7 @@ class MySQLConnection:
             """, username
         )
     
-    def get_user_data(self, user_id) -> List[Dict[str, Any]]:
+    def get_user_data(self, user_id: int) -> List[Dict[str, Any]]:
         return self.__execute_query(
             f"""
             SELECT *
@@ -126,10 +126,10 @@ class MySQLConnection:
         )
 
 
-    def get_channel_users(self, channel_id) -> List[Dict[str, Any]]:
+    def get_channel_users(self, channel_id: int) -> List[Dict[str, Any]]:
         return self.__execute_query(
             f"""
-            SELECT u.UserID, u.Username FROM UserChannelConnection as uc
+            SELECT u.UserID, u.Username, u.Firstname, u.Lastname FROM UserChannelConnection as uc
             LEFT JOIN Users as u
             ON u.UserID = uc.UserID
             WHERE uc.ChannelID = %s
@@ -171,15 +171,66 @@ class MySQLConnection:
 
         return self.__execute_query(
             """
-            SELECT UserID, Username, Firstname, Region, DateAccountCreated
+            SELECT UserID, Username, Firstname, Lastname, Region, DateAccountCreated
             FROM Users
             WHERE UserID != %s
             AND (LOWER(Firstname) LIKE %s
             OR LOWER(Username) LIKE %s
+            OR LOWER(Lastname) LIKE %s
             )
-            """, user_id, search_term, search_term
+            """, user_id, search_term, search_term, search_term
             )      
+    
+    def add_friend_request(self, sender_id: int, receiver_id: int):
+        self.__execute_query(
+            """
+            INSERT INTO FriendConnections (FriendRequestSenderID, FriendRequestReceiverID, DateRequestSent, Accepted)
+            VALUES (%s, %s, %s, False)
+            """, sender_id, receiver_id, self.convert_datetime_format(datetime.now())
+            )
+        
+    def accept_friend_request(self, sender_id: int, receiver_id: int):
+        self.__execute_query("""
+            UPDATE FriendConnections
+            SET Accepted = True, DateRequestAccepted = %s
+            WHERE FriendRequestSenderID = %s
+            AND FriendRequestReceiverID = %s
+            """, self.convert_datetime_format(datetime.now()), sender_id, receiver_id)
 
+    def reject_friend_request(self, sender_id: int, receiver_id: int):
+        self.__execute_query("""
+            DELETE FROM FriendConnections
+            WHERE FriendRequestSenderID = %s
+            AND FriendRequestReceiverID = %s
+            """, sender_id, receiver_id)
+    
+    def remove_friend(self, user_id_1: int, user_id_2: int):
+        self.__execute_query("""
+            DELETE FROM FriendConnections
+            WHERE (FriendRequestSenderID = %s
+            AND FriendRequestReceiverID = %s)
+            OR (FriendRequestSenderID = %s
+            AND FriendRequestReceiverID = %s)
+            """, user_id_1, user_id_2, user_id_2, user_id_1)
+
+    def get_user_friend_connections(self, user_id: int) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        #All outgoing friend requests
+        return self.__execute_query(
+            """
+            SELECT u.UserID, u.Username, u.Firstname, u.Lastname, fc.FriendRequestReceiverID, fc.Accepted, fc.DateRequestAccepted
+            FROM FriendConnections as fc, Users as u
+            WHERE fc.FriendRequestSenderID = %s
+            AND fc.FriendRequestReceiverID = u.UserID            
+            """, user_id
+        #All incoming friend requests
+        ), self.__execute_query(
+            """
+            SELECT u.UserID, u.Username, u.Firstname, u.Lastname, fc.FriendRequestSenderID, fc.Accepted, fc.DateRequestAccepted
+            FROM FriendConnections as fc, Users as u
+            WHERE fc.FriendRequestReceiverID = %s
+            AND fc.FriendRequestSenderID = u.UserID    
+            """, user_id
+        )
     def read_table(self, table_name):
         return self.__execute_query(f""" SELECT * FROM {table_name}""")
 
@@ -191,7 +242,7 @@ class MySQLConnection:
             self.cnx.commit()
 
             if data:
-                column_names = [i[0] for i in self.cursor.description]
+                column_names = [column[0] for column in self.cursor.description]
                 return [dict(zip(column_names, row)) for row in data]
             
         except mysql.connector.Error as err:

@@ -63,7 +63,7 @@ class Client():
 
                     elif isinstance(msg, LoginResponse):
                         if msg.success:
-                            self.controller.login_approved(msg.user_id)
+                            self.controller.login_approved()
                         else:
                             self.controller.login_failed()
                     
@@ -79,16 +79,29 @@ class Client():
                                 msg.channel_id,
                                 msg.channel_name
                             )
+                    elif isinstance(msg, ChannelLeaveNotif):
+                        self.controller.user_left_channel_update(msg.channel_id, msg.username)
+
                     elif isinstance(msg, UserJoinNotif):
-                        self.controller.user_join_channel_update(msg.channel_id, msg.username)
+                        self.controller.user_join_channel_update(msg.channel_id, msg.username, msg.firstname, msg.lastname)
                     
                     elif isinstance(msg, SearchReponse):
                         self.controller.search_response(msg.response_data)
                     elif isinstance(msg, SignUpResponse):
                         if msg.success:
                             #Same procedure as login
-                            self.controller.login_approved(msg.user_id)
+                            self.controller.login_approved()
+                    elif isinstance(msg, FriendRequestNotif):
+                        self.controller.friend_request_recieved(msg.username, msg.firstname, msg.lastname)
 
+                    elif isinstance(msg, FriendRemoval):
+                        self.controller.remove_friend_notif(msg.username)
+
+                    elif isinstance(msg, FriendRequestDecision):
+                        self.controller.friend_request_decision(msg.username, msg.success)
+
+                    elif isinstance(msg, FriendStatusNotif):
+                        self.controller.friend_status_notif(msg.username, msg.firstname, msg.lastname, msg.decision)
 
             except (ConnectionResetError, ConnectionAbortedError) as e:
                 logging.error(e)

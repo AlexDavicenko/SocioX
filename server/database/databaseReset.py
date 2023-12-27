@@ -73,8 +73,9 @@ def reset_database(db_name, gdb_name):
             FriendConnectionID int(11) NOT NULL AUTO_INCREMENT,
             FriendRequestSenderID int(11) NOT NULL,
             FriendRequestReceiverID int(11) NOT NULL,
-            DateRequestSent datetime NOT NULL,
-            DateRequestAccepted datetime,
+            DateRequestAccepted datetime NOT NULL,
+            Accepted boolean NOT NULL,
+            DateRequestCompleted datetime,
             PRIMARY KEY (FriendConnectionID),
             FOREIGN KEY (FriendRequestSenderID) REFERENCES Users(UserID),
             FOREIGN KEY (FriendRequestReceiverID) REFERENCES Users(UserID)

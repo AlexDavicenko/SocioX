@@ -89,7 +89,7 @@ class Controller:
         
         for user in self.dal.get_channel_users(channel_id):
             if user['UserID'] != user_id:
-                self.add_message_by_id(client_id, UserJoinNotif(channel_id, user['Username']))
+                self.add_message_by_id(client_id, UserJoinNotif(channel_id, user['Username'], user['Firstname'], user['Lastname']))
 
     #Updates the other uses in a channel when a user joins
     def update_users_on_user_join(self, client_id: int, channel_id: int):
@@ -105,11 +105,51 @@ class Controller:
                     #Maps user id to client id to be able to send message
                     self.add_message_by_id(self.user_id_client_id_map[user['UserID']], UserJoinNotif(channel_id, username))
 
+    def update_user_on_friend_status(self, client_id: int, user_id: int):
+
+        connections = self.dal.get_user_friend_connections(user_id)
+        if connections == ([], []):
+            return
+        
+        outgoing_reqs, incoming_reqs = connections
+        for request in outgoing_reqs:
+            if request['Accepted']:
+                self.add_message_by_id(client_id, FriendStatusNotif(
+                    username = request['Username'],
+                    firstname= request['Firstname'],
+                    lastname= request['Lastname'],
+                    decision="Remove"
+                ))
+            else:
+                self.add_message_by_id(client_id, FriendStatusNotif(
+                    username = request['Username'],
+                    firstname= request['Firstname'],
+                    lastname= request['Lastname'],
+                    decision="Pending"
+                ))
+        for request in incoming_reqs:
+            if request['Accepted']:
+                self.add_message_by_id(client_id, FriendStatusNotif(
+                    username = request['Username'],
+                    firstname= request['Firstname'],
+                    lastname= request['Lastname'],
+                    decision="Remove"
+                ))
+            else:
+                if request['DateRequestAccepted'] == None:
+                    self.add_message_by_id(client_id, FriendStatusNotif(
+                        username = request['Username'],
+                        firstname= request['Firstname'],
+                        lastname= request['Lastname'],
+                        decision="Accept"
+                    ))
+
 
     #Updates clients after login on everything 
     def update_client(self, client_id: int):
-
         user_id = self.client_id_user_id_map[client_id]
+        self.update_user_on_friend_status(client_id, user_id)
+
         for channel in self.dal.get_user_channels(user_id):
 
             channel_id = channel['ChannelID']
@@ -119,8 +159,9 @@ class Controller:
                 channel_name = channel['ChannelName']
             ))
 
-            self.update_user_on_channel_messages(client_id, channel_id)
             self.update_user_on_channel_members(client_id, channel_id)
+            self.update_user_on_channel_messages(client_id, channel_id)
+
 
 
     # //// General Handler ////
@@ -155,14 +196,14 @@ class Controller:
 
         elif isinstance(msg, ChannelLeave):
             user_id = self.client_id_user_id_map[client_id]
-            print(msg.channel_id, user_id)
             self.dal.remove_user_from_channel(msg.channel_id, user_id)
-            
+            username = self.dal.get_user_data(user_id)[0]['Username']
             for member in self.dal.get_channel_users(msg.channel_id):
                 channel_member_id = member['UserID']
+                #If other users in the channel are online they are notifed about the leave
                 if channel_member_id in self.user_id_client_id_map:
-                    client_id = self.user_id_client_id_map[channel_member_id]
-                    self.add_message_by_id(client_id, UserLeaveNotification(msg.channel_id, user_id))
+                    member_client_id = self.user_id_client_id_map[channel_member_id]
+                    self.add_message_by_id(member_client_id, ChannelLeaveNotif(msg.channel_id, username))
 
 
         elif isinstance(msg, ChannelJoinRequest):
@@ -235,3 +276,45 @@ class Controller:
             #save the client_id -> user_id mapping
             self.client_id_user_id_map[client_id] = user_id
             self.user_id_client_id_map[user_id] = client_id
+        
+        elif isinstance(msg, FriendRequest):
+            user_id = self.client_id_user_id_map[client_id]
+            receiver_id = self.dal.get_user_id(msg.username)
+            self.dal.add_friend_request(user_id, receiver_id)
+
+            #Check if the receiver is online
+            if receiver_id in self.user_id_client_id_map:
+                receiver_client_id = self.user_id_client_id_map[receiver_id]
+                sender_data = self.dal.get_user_data(user_id)[0]
+                self.add_message_by_id(receiver_client_id, FriendRequestNotif(
+                    username = sender_data['Username'],
+                    firstname= sender_data['Firstname'],
+                    lastname= sender_data['Lastname']
+                ))
+
+        elif isinstance(msg, FriendRequestDecision):
+            user_id = self.client_id_user_id_map[client_id]
+            sender_id = self.dal.get_user_id(msg.username)
+            if msg.success:
+                self.dal.accept_friend_request(sender_id, user_id)
+            else:
+                self.dal.reject_friend_request(sender_id, user_id)
+
+            if sender_id in self.user_id_client_id_map:
+                friend_client_id = self.user_id_client_id_map[sender_id]
+                sender_data = self.dal.get_user_data(user_id)[0]
+                #Same message as the one received
+                self.add_message_by_id(friend_client_id, FriendRequestDecision(
+                    success=msg.success,
+                    username = sender_data['Username'],
+                ))
+            
+        elif isinstance(msg, FriendRemoval):
+            other_user_id = self.dal.get_user_id(msg.username)
+            user_id = self.client_id_user_id_map[client_id]
+            self.dal.remove_friend(user_id, other_user_id)
+            if other_user_id in self.user_id_client_id_map:
+                other_user_client_id = self.user_id_client_id_map[other_user_id]
+                self.add_message_by_id(other_user_client_id, FriendRemoval(
+                    username = self.dal.get_user_data(user_id)[0]['Username']
+                ))

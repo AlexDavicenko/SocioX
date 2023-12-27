@@ -78,7 +78,7 @@ class ResultsFrame(ctk.CTkScrollableFrame):
             result.pack_forget()
         self.results_list = []
         for result in result_data:
-            user_result_frame = UserResultFrame(self, self.controller, result["Username"], result["Firstname"], result["AccountAge"])
+            user_result_frame = UserResultFrame(self, self.controller, result["Username"], result["Firstname"], result['Lastname'], result["AccountAge"])
             self.results_list.append(user_result_frame)
             user_result_frame.pack(expand = True, side = "top", fill = 'x', padx = (0,25))
 
@@ -87,29 +87,31 @@ class ResultsFrame(ctk.CTkScrollableFrame):
 
 
 class UserResultFrame(ctk.CTkFrame):
-    def __init__(self, parent: ResultsFrame, controller: Controller, username, firstname, account_age):
+    def __init__(self, parent: ResultsFrame, controller: Controller, username, firstname, lastname, account_age):
         super().__init__(parent)
 
         self.controller = controller
         self.firstname = firstname
         self.username = username
+        self.firstname = firstname
+        self.lastname = lastname
         self.account_age = account_age
     
 
-        self.username_label = ctk.CTkLabel(self, text=username, font=('TkDefaultFont', 12))
-        self.firstname_label = ctk.CTkLabel(self, text=firstname, font=('TkDefaultFont', 12))
+        self.username_label = ctk.CTkLabel(self, text=username, font=('TkDefaultFont', 14, "bold"))
+        self.name_label = ctk.CTkLabel(self, text=firstname+" "+lastname, font=('TkDefaultFont', 12))
         self.account_age_label = ctk.CTkLabel(self, text=account_age, font=('TkDefaultFont', 12))
-        self.add_friend_button = ctk.CTkButton(self, text="Add", command=self.add_friend, height = 15, width = 50)
+        self.add_friend_button = ctk.CTkButton(self, text="Add", command=self.add_friend, height = 20, width = 45)
         if username in self.controller.friends:
             self.add_friend_button.config(state ="disabled")
 
 
         self.grid_columnconfigure(2,weight=1)
 
-        self.username_label.grid(padx = 10, pady = 5, column = 1, row = 0,)
-        self.add_friend_button.grid(padx = 10, column = 0, row = 0,)
+        self.username_label.grid(padx = 10, pady = 5, column = 1, row = 0,sticky = "ns")
+        self.add_friend_button.grid(padx = 10, column = 0, row = 0, sticky = "w")
         self.account_age_label.grid(padx = 0, pady = 5, column = 3, row = 0,sticky = 'e')
-        self.firstname_label.grid(padx = 10, pady = 10, column = 0, row = 1,)
+        self.name_label.grid(padx = 10, pady = 10, column = 0, row = 1, columnspan = 2, sticky = "w")
 
     def add_friend(self):
-        self.controller.send_friend_request(self.username)
+        self.controller.send_friend_request(self.username, self.firstname, self.lastname)

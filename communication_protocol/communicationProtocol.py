@@ -5,8 +5,6 @@ WORD_LENGTH = 64
 
 
 
-
-
 def send_bytes(connection: socket, data: bytes) -> None:
     header = str(f"{len(data):<{WORD_LENGTH}}").encode()
     connection.send(header)
@@ -29,4 +27,3 @@ def listen_for_bytes(connection: socket, close_event: Event = Event()) -> bytes:
 
         if len(full_data)-WORD_LENGTH == data_length:
             return full_data[WORD_LENGTH:]
-

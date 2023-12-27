@@ -79,6 +79,7 @@ public:
 
     }
 
+    //Creates edge between node A and node B or overwrites an existing edge
     void addEdge(string nodeAId, string nodeBId, float weight) {
 
         //Check for existence
@@ -93,8 +94,9 @@ public:
         //If edge map already contains node A
         if (edgeMap.count(nodeA)) {
 
-            list < pair < Node*, float >> *edgeList = edgeMap[nodeA];
+            list<pair<Node*, float>> *edgeList = edgeMap[nodeA];
 
+            //Remove edge if one already exists
             for (auto& p : *edgeList) {
                 if (p.first->id == nodeB->id) {
                     edgeList->remove(p);

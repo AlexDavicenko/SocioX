@@ -24,6 +24,9 @@ class GraphDBConnection:
     def addUser(self, username: str):
         self.graph.addNode(username)
 
+    def addEdge(self, username_1: str, username_2: str, weight: int):
+        self.graph.addEdge(username_1, username_2, weight)
+
     def reset(self):
         self.graph = Graph()
         

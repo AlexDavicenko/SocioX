@@ -2,11 +2,11 @@ import customtkinter as ctk
 import tkinter as tk
 import logging
 
+from CTkMessagebox import CTkMessagebox
 from copy import copy
 from typing import Dict, List, Callable
 
-import sys
-sys.path.append('../')
+import sys; sys.path.append('../')
 from communication_protocol.TCPMessages import *
 sys.path.append('client/')
 
@@ -28,7 +28,10 @@ class Controller:
         
         self.root = root
         self.username: str = None
+        self.firstname: str = None
+        self.lastname: str = None
         self.friends: List[str] = []
+        self.outgoing_friend_requests: List[str] = []
         self.logged_in: bool = False 
         self.current_channel_id: int = None
 
@@ -49,27 +52,42 @@ class Controller:
         self.frames: Dict[str, Window] = {} 
         
         #TODO: Solve with enums
-        for FrameClass in (LoginWindow, SignUpWindow, EmailVerificationWindow, CoreAppEntryPointWindow, AddChannelWindow, SearchWindow, SettingWindow, PasswordResetWindow):
+        for FrameClass in (
+            LoginWindow,
+            SignUpWindow, 
+            EmailVerificationWindow, 
+            CoreAppEntryPointWindow, 
+            AddChannelWindow, 
+            SearchWindow, 
+            SettingWindow, 
+            PasswordResetWindow):
 
             frame = FrameClass(self.root_container, self)
-  
             self.frames[FrameClass.__name__] = frame
   
             frame.grid(row = 0, column = 0, sticky ="nsew")
-        
+
+        self.login_window: LoginWindow = self.frames[WindowTypes.LoginWindow]
+        self.signup_window: SignUpWindow = self.frames[WindowTypes.SignUpWindow]
+        self.email_verification_window: EmailVerificationWindow = self.frames[WindowTypes.EmailVerificationWindow]
+        self.core_app: CoreAppEntryPointWindow = self.frames[WindowTypes.CoreAppEntryPointWindow]
+        self.add_channel_window: AddChannelWindow = self.frames[WindowTypes.AddChannelWindow]
+        self.search_window: SearchWindow = self.frames[WindowTypes.SearchWindow]
+        self.setting_window: SettingWindow = self.frames[WindowTypes.SettingWindow]
+        self.password_reset_window: PasswordResetWindow = self.frames[WindowTypes.PasswordResetWindow]
         self.switch_frame(WindowTypes.LoginWindow)
 
         self.root_container.pack(side = "top", fill = "both", expand = True)
     
         self.root_container.grid_rowconfigure(0, weight = 1)
         self.root_container.grid_columnconfigure(0, weight = 1)
-        self.core_app: CoreAppEntryPointWindow = self.frames[WindowTypes.CoreAppEntryPointWindow]
 
     
     def switch_frame(self, frame_name: str) -> None:
         frame = self.frames[frame_name]
         frame.window_bindings()
         frame.tkraise()
+        self.core_app.text_bar_frame.send_button.configure(state = "on")
     
 
     # //// Client ////
@@ -88,13 +106,15 @@ class Controller:
 
     # //// Messages ////
 
-    def add_outgoing_text_msg(self, content: str) -> None:
-        self.outgoing_msgs.append(
-            TextMessage(self.current_channel_id, content)
-        )
+    def add_message(self, content: str) -> None:
+        if self.current_channel_id:
+            self.core_app.channel_frame.add_message(self.current_channel_id, self.username, datetime.now(), content)
+            self.outgoing_msgs.append(
+                TextMessage(self.current_channel_id, content)
+            )
+        else:
+            CTkMessagebox(title = "Channel Error", message= "You are not in a channel, join or create a channel to send messages.", icon="cancel") 
 
-    def add_message_internal(self, content):
-        self.core_app.channel_frame.add_message(self.current_channel_id, self.username, datetime.now(), content)
 
     # //// Channels ////
 
@@ -107,7 +127,7 @@ class Controller:
     
     def add_channel(self, channel_id: int, channel_name: str):
         self.core_app.add_channel(channel_id, channel_name)
-        self.core_app.channel_frame.add_user(channel_id, self.username)
+        self.core_app.channel_frame.add_user(channel_id, self.username, self.firstname, self.lastname)
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
         
     
@@ -116,13 +136,13 @@ class Controller:
         self.core_app.channel_frame.switch_channel(channel_id)
         self.core_app.right_side_frame.user_list_frame.set_users(self.core_app.channel_frame.current_channel_frame.users)
 
-    def user_join_channel_update(self, channel_id: int, username: str) -> None:
+    def user_join_channel_update(self, channel_id: int, username: str, firstname: str, lastname: str) -> None:
         #rerender if in focus
-        self.core_app.channel_frame.add_user(channel_id, username)
+        self.core_app.channel_frame.add_user(channel_id, username, firstname, lastname)
         
         #If a channel frame is current being viewed
         if self.current_channel_id == channel_id:
-            self.core_app.right_side_frame.user_list_frame.set_users(self.core_app.channel_frame.message_frame_container.users)
+            self.core_app.right_side_frame.user_list_frame.set_users(self.core_app.channel_frame.current_channel_frame.users)
 
 
     def channel_join_request(self, channel_id: int):
@@ -138,16 +158,14 @@ class Controller:
             pass
 
     def create_channel(self, channel_id: int, channel_name: str):
-        add_channel_window: AddChannelWindow = self.frames[WindowTypes.AddChannelWindow]
-        add_channel_window.central_frame.create_channel_frame.channel_name_entry_box.clear()
-        add_channel_window.central_frame.join_channel_frame.channel_id_entry_box.clear()
+        self.add_channel_window.central_frame.create_channel_frame.channel_name_entry_box.clear()
+        self.add_channel_window.central_frame.join_channel_frame.channel_id_entry_box.clear()
         self.add_channel(channel_id, channel_name)
 
 
     def join_channel(self, channel_id: int, channel_name: str):
-        add_channel_window: AddChannelWindow = self.frames[WindowTypes.AddChannelWindow]
-        add_channel_window.central_frame.create_channel_frame.channel_name_entry_box.clear()
-        add_channel_window.central_frame.join_channel_frame.channel_id_entry_box.clear()
+        self.add_channel_window.central_frame.create_channel_frame.channel_name_entry_box.clear()
+        self.add_channel_window.central_frame.join_channel_frame.channel_id_entry_box.clear()
         self.add_channel(channel_id, channel_name)
 
     def leave_channel(self):
@@ -160,19 +178,61 @@ class Controller:
         if cfs.keys():
             self.switch_channel(list(cfs.keys())[0])
         
-    def user_left_channel_update(self, channel_id, user_id):
-        #TODO
-        pass
-
+    def user_left_channel_update(self, channel_id, username):
+        #Remove username of the user who left from the list stored in the channel frame
+        users = self.core_app.channel_frame.current_channel_frame.users
+        for user in users:
+            if user[0] == username:
+                users.remove(user)
+        #If the channel is currently being viewed
+        if channel_id == self.current_channel_id:
+            #Update the user list frame with modified user list
+            self.core_app.right_side_frame.user_list_frame.set_users(users)
+            
     # //// Friends ////
-    def send_friend_request(self, username: str) -> None:
-        self.outgoing_msgs.append(FriendRequestSent(datetime.now(),username))
+    def send_friend_request(self, username: str, firstname: str, lastname: str) -> None:
+        if username not in self.outgoing_friend_requests and username not in self.friends:
+            self.outgoing_msgs.append(FriendRequest(username))            
+            self.setting_window.friend_list_frame.add_decision_frame(username, firstname, lastname, "Pending")
+            self.outgoing_friend_requests.append(username)
     
-    def friend_request_accepted(self, username: str) -> None:
+    def accept_friend_request(self, username: str) -> None:
         self.friends.append(username)
-        
-    def friend_request_recieved(self, username: str) -> None:
-        pass
+        self.outgoing_msgs.append(FriendRequestDecision(True, username))
+        self.setting_window.friend_list_frame.update_decision_frame(username, "Remove")
+
+    def reject_friend_request(self, username: str) -> None:
+        self.outgoing_msgs.append(FriendRequestDecision(False, username))
+        self.setting_window.friend_list_frame.remove_decision_frame(username)
+
+    def friend_request_recieved(self, username: str, firstname: str, lastname: str) -> None:
+        self.setting_window.friend_list_frame.add_decision_frame(username, firstname, lastname, "Accept")
+
+    def remove_friend(self, username: str) -> None:
+        self.friends.remove(username)
+        self.setting_window.friend_list_frame.remove_decision_frame(username)
+        self.outgoing_msgs.append(FriendRemoval(username))
+
+    def remove_friend_notif(self, username: str) -> None:
+        self.friends.remove(username)
+        self.setting_window.friend_list_frame.remove_decision_frame(username)
+
+
+    def friend_request_decision(self, username: str, accepted: bool) -> None:
+        if accepted:
+            self.friends.append(username)
+            self.setting_window.friend_list_frame.update_decision_frame(username, "Remove")
+        else:
+            self.outgoing_friend_requests.remove(username)
+            self.setting_window.friend_list_frame.remove_decision_frame(username)
+
+
+    def friend_status_notif(self, username: str, firstname: str, lastname: str, decision: str) -> None:
+        if decision == "Remove":
+            self.friends.append(username)
+        if decision == "Pending":
+            self.outgoing_friend_requests.append(username)
+        self.setting_window.friend_list_frame.add_decision_frame(username, firstname, lastname, decision)
 
     # //// Search ////
     def search_request(self, search: str) -> None:
@@ -181,9 +241,7 @@ class Controller:
         )
 
     def search_response(self, response_data: List) -> None:
-        search_window: SearchWindow = self.frames[WindowTypes.SearchWindow]
-        search_window.central_search_frame.results_frame.set_results(response_data)
-
+        self.search_window.central_search_frame.results_frame.set_results(response_data)
 
     # //// Login ////
     def attempt_login(self, name: str) -> None:
@@ -195,8 +253,7 @@ class Controller:
             )
         )
 
-    def login_approved(self, user_id: int): 
-               
+    def login_approved(self):
         self.logged_in = True
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
 
@@ -208,16 +265,19 @@ class Controller:
     # //// Sign up ////
     def signup_request(self) -> None:
         signup_window: SignUpWindow = self.frames[WindowTypes.SignUpWindow]
-        month_str = signup_window.detail_entry_frame.date_entry_frame.month_option_menu.get()
-        day = int(signup_window.detail_entry_frame.date_entry_frame.day_entry_box.get())
-        year = int(signup_window.detail_entry_frame.date_entry_frame.year_entry_box.get())
-        month = signup_window.detail_entry_frame.date_entry_frame.MONTHS.index(month_str) + 1
-        username = signup_window.detail_entry_frame.top_entry_frame.username_entry_box.get()
+        detail_entry_frame = signup_window.detail_entry_frame
+        month_str = detail_entry_frame.date_entry_frame.month_option_menu.get()
+        day = int(detail_entry_frame.date_entry_frame.day_entry_box.get())
+        year = int(detail_entry_frame.date_entry_frame.year_entry_box.get())
+        month = detail_entry_frame.date_entry_frame.MONTHS.index(month_str) + 1
+        username = detail_entry_frame.top_entry_frame.username_entry_box.get()
+        firstname = detail_entry_frame.top_entry_frame.firstname_entry_box.get()
+        lastname = detail_entry_frame.top_entry_frame.lastname_entry_box.get()
         self.outgoing_msgs.append(
             SignUpAttempt(
                 username = username,
-                firstname = signup_window.detail_entry_frame.top_entry_frame.firstname_entry_box.get(),
-                lastname = signup_window.detail_entry_frame.top_entry_frame.lastname_entry_box.get(),
+                firstname = firstname,
+                lastname = lastname,
                 email = signup_window.detail_entry_frame.top_entry_frame.email_entry_box.get(),
                 password = signup_window.detail_entry_frame.top_entry_frame.password_entry_box.get(),
                 dob = datetime(year, month, day)
@@ -225,6 +285,8 @@ class Controller:
         )
         
         self.username = username
+        self.firstname = firstname
+        self.lastname = lastname
         self.core_app.username = username
 
     def signup_response(self) -> None: 

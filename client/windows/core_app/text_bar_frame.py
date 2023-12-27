@@ -23,7 +23,7 @@ class TextBarFrame(ctk.CTkFrame):
         self.message_entry_box = ctk.CTkEntry(self, textvariable = self.message_box_text_variable)
         self.message_entry_box.grid(column = 0, row = 1, padx = 10, pady = 10, sticky = 'nsew')
 
-        self.send_button = ctk.CTkButton(self, text = "Send", command = self.send_button_clicked)
+        self.send_button = ctk.CTkButton(self, text = "Send", command = self.send_button_clicked, state="off")
         self.send_button.grid(column = 1, row = 1, padx = (5,10), sticky = 'ew')
         self.on_message_entry_box_modify()
 
@@ -37,13 +37,12 @@ class TextBarFrame(ctk.CTkFrame):
     def send_button_clicked(self, e = None):
         message_text = self.message_box_text_variable.get()
         if message_text:
+            self.controller.add_message(message_text)
 
-            self.controller.add_outgoing_text_msg(message_text)
-            self.controller.add_message_internal(message_text)
         self.message_box_text_variable.set("")
 
     def on_suggestion_press(self, e = None, suggestionNo: int = 2):
-        print('Suggestion press')
+        #print('Suggestion press')
         match suggestionNo:
             case 1:
                 suggestion = self.suggestion_frame.suggestion_box_1._text
