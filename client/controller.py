@@ -33,7 +33,7 @@ class Controller:
         self.lastname: str = None    
         self.email: str = None
         self.dob: datetime = None
-        self.account_created: datetime = None    
+        self.account_created: str = None    
         self.logged_in: bool = False 
 
         self.current_channel_id: int = None
@@ -258,7 +258,7 @@ class Controller:
             )
         )
 
-    def login_approved(self, user_id: int, username: str, firstname: str, lastname: str, email: str, dob: datetime, account_created: datetime) -> None:
+    def login_approved(self, user_id: int, username: str, firstname: str, lastname: str, email: str, dob: datetime, account_created: str) -> None:
         self.user_id = user_id
         self.username = username
         self.firstname = firstname
@@ -268,6 +268,8 @@ class Controller:
         self.account_created = account_created
         self.logged_in = True
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
+
+        self.setting_window.information_frame.create_labels(username, firstname, lastname, email, dob.strftime(r'%Y:%m:%d'), account_created)
 
     def login_failed(self):
         self.login_window.login_failed()

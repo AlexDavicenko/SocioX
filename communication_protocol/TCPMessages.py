@@ -131,7 +131,7 @@ class LoginResponse(AuthMessage):
     lastname: str
     email: str
     dob: datetime
-    account_created: datetime
+    account_created: str
 
 @dataclass
 class SignUpAttempt(AuthMessage):

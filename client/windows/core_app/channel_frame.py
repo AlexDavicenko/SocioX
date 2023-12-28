@@ -106,7 +106,6 @@ class MessageFrame(ctk.CTkFrame):
         self.MESSAGE_FONT = ctk.CTkFont('Helvetica', 12)
         self.PLUS_FONT = ctk.CTkFont('Helvetica', 15)
 
-
         self.controller = controller
         self.username = username
         self.firstname = firstname
@@ -120,14 +119,11 @@ class MessageFrame(ctk.CTkFrame):
         self.text_frame = ctk.CTkFrame(self, corner_radius = 1)
         self.text_frame.pack(expand = True, fill = ctk.X)
 
-
         self.usernameLabel = ctk.CTkLabel(self.context_frame, text=username, font = self.USERNAME_FONT)
         self.usernameLabel.pack(side= tk.LEFT,  anchor="nw", ipadx = 10)
 
-
         self.timeLabel = ctk.CTkLabel(self.context_frame, text=time)
         self.timeLabel.pack(side= tk.RIGHT, anchor = "ne", ipadx = 10)
-
 
         #The user is still in the channel and the data was sent abt their first and last name
         if self.firstname != None and self.lastname != None:

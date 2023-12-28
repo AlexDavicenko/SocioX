@@ -35,6 +35,19 @@ class Controller:
         self.client_id_user_id_map[client_id] = user_id
         self.user_id_client_id_map[user_id] = client_id
 
+    @staticmethod
+    def format_age(start: datetime) -> str:
+
+        account_age = relativedelta(datetime.now(), start)
+
+        if account_age.hours:
+            age_formatted = f"{account_age.hours} hours, and {account_age.minutes} minutes ago"
+        elif account_age.minutes:
+            age_formatted = f"{account_age.minutes} minutes, and {account_age.seconds} seconds ago"
+        else:
+            age_formatted = f"{account_age.seconds} seconds ago"
+        return age_formatted
+
     # //// Text messages ////
 
     def get_new_messages(self, client_id: int) -> List[TCPMessage]:
@@ -200,7 +213,7 @@ class Controller:
                         lastname = user_data['Lastname'],
                         email = user_data['Email'],
                         dob = user_data['DateOfBirth'],
-                        account_created = user_data['DateAccountCreated']
+                        account_created = "Account created: " + self.format_age(user_data['DateAccountCreated'])
                     ))
                     self.update_client(client_id)
             case _:
@@ -254,15 +267,9 @@ class Controller:
                     response_user_id = response.pop('UserID', None)
                         
                     account_created_date = response.pop("DateAccountCreated", None)
-                    account_age = relativedelta(datetime.now(), account_created_date)
 
-                    if account_age.hours:
-                        account_age_formatted = f"Account created: {account_age.hours} hours, and {account_age.minutes} minutes ago"
-                    elif account_age.minutes:
-                        account_age_formatted = f"Account created: {account_age.minutes} minutes, and {account_age.seconds} seconds ago"
-                    else:
-                        account_age_formatted = f"Account created: {account_age.seconds} seconds ago"
-
+                    account_age_formatted = "Account created: " + self.format_age(account_created_date)
+                    
                     response["AccountAge"] = account_age_formatted
 
                 self.add_message_by_id(client_id, SearchReponse(
@@ -287,7 +294,7 @@ class Controller:
                     lastname = msg.lastname,
                     email = msg.email,
                     dob = msg.dob,
-                    account_created = datetime.now()
+                    account_created = "Just now"
                 ))     
                 self.save_client_user_id_mapping(client_id, user_id)
                 

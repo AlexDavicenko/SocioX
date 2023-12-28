@@ -13,18 +13,24 @@ class SettingWindow(Window):
         super().__init__(parent, fg_color= ['gray86', 'gray17'])
         self.controller = controller
 
-        self.grid_rowconfigure(0,weight=1)
         self.grid_rowconfigure(1,weight=1)
+        self.grid_rowconfigure(3,weight=10)
         self.grid_columnconfigure(0,weight=1)
         
+        self.information_title_label = ctk.CTkLabel(self, text = 'Your information', font=('TkDefaultFont', 24))
+        self.information_title_label.grid(padx = 10, pady = 10, column = 0, row =1, sticky = "w")
+
         self.information_frame = InformationFrame(self, controller)
-        self.information_frame.grid(padx = 10, pady = 10, column = 0, row = 0, columnspan = 2, sticky = "nsew")
+        self.information_frame.grid(padx = 10, pady = 10, column = 0, row = 1, columnspan = 2, sticky = "nwe")
         
+        self.manage_friends_label = ctk.CTkLabel(self, text = 'Manage Friends', font=('TkDefaultFont', 24))
+        self.manage_friends_label.grid(padx = 10, pady = 10, column = 0, row = 2, sticky = "w")
+
         self.friend_list_frame = FriendListFrame(self, controller)
-        self.friend_list_frame.grid(padx = 10, pady = 10, column = 0, row = 1, columnspan = 2, sticky = "nsew")
+        self.friend_list_frame.grid(padx = 10, pady = 10, column = 0, row = 3, columnspan = 2, sticky = "nsew")
 
         self.back_button = ctk.CTkButton(self, text = 'Back', command = self.back_button_pressed, width= 120, height = 40)
-        self.back_button.grid(padx = 10, pady = 10, column = 1, row = 2) 
+        self.back_button.grid(padx = 10, pady = 10, column = 1, row = 4) 
 
     def back_button_pressed(self, e = None):
         self.controller.switch_frame(WindowTypes.CoreAppEntryPointWindow)
@@ -36,16 +42,28 @@ class InformationFrame(ctk.CTkFrame):
 
         self.parent = parent    
         self.controller = controller
-        #TODO: display user information
-        self.username_label = ctk.CTkLabel(self, text="Username", font=('TkDefaultFont', 14, "bold"))
-        self.name_label = ctk.CTkLabel(self, text="Name", font=('TkDefaultFont', 12))
-        self.email_label = ctk.CTkLabel(self, text="Email", font=('TkDefaultFont', 12))
 
+    def create_labels(self, username: str, firstname: str, lastname: str, email: str, dob: str, account_age: str):
+        self.username_label = ctk.CTkLabel(self, text="Username: " + username, font=('TkDefaultFont', 12))
+        self.firstname_label = ctk.CTkLabel(self, text="Firstname: " + firstname, font=('TkDefaultFont', 12))
+        self.lastname_label = ctk.CTkLabel(self, text="Lastname: " + lastname, font=('TkDefaultFont', 12))
+        self.email_label = ctk.CTkLabel(self, text="Email: " + email, font=('TkDefaultFont', 12))
+        self.dob_label = ctk.CTkLabel(self, text="Date of birth: " + dob, font=('TkDefaultFont', 12))
+        self.account_age_label = ctk.CTkLabel(self, text=account_age, font=('TkDefaultFont', 12))
 
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
+        self.username_label.grid(column = 0, row = 0, sticky = 'w', padx = 10)
+        self.firstname_label.grid(column = 0, row = 1, sticky = 'w', padx = 10)
+        self.lastname_label.grid(column = 0, row = 2, sticky = 'w', padx = 10)
+        self.email_label.grid(column = 1, row = 0, sticky = 'n', padx = 10)
+        self.dob_label.grid(column = 2, row = 0, sticky = 'e', padx = 10)
+        self.account_age_label.grid(column = 2, row = 1, sticky = 'e', padx = 10)
 
-class FriendListFrame(tk.Frame): 
+class FriendListFrame(ctk.CTkScrollableFrame): 
     def __init__(self, parent: SettingWindow, controller: Controller):
-        super().__init__(parent,)# fg_color=['gray86', 'gray17']
+        super().__init__(parent, fg_color=['gray86', 'gray17'])
 
         self.parent = parent    
         self.controller = controller
@@ -86,6 +104,7 @@ class FriendDecisionFrame(ctk.CTkFrame):
 
         self.username_label.grid(column = 0, row = 0, sticky = 'w')
         self.name_label.grid(column = 0, row = 1, sticky = 'w')
+        self.columnconfigure(1, weight=1)
 
         self.render_decision_buttons(decision)
 
@@ -102,15 +121,23 @@ class FriendDecisionFrame(ctk.CTkFrame):
         self.decision_button_alt: ctk.CTkButton = None
 
         if decision == "Accept":
-            self.decision_button = ctk.CTkButton(self, text="Accept", command= lambda : self.controller.accept_friend_request(self.username), height = 20, width = 45)
-            self.decision_button_alt = ctk.CTkButton(self, text="Reject", command= lambda : self.controller.reject_friend_request(self.username), height = 20, width = 45)
+            self.decision_button = ctk.CTkButton(self, text="Accept", command= lambda : self.controller.accept_friend_request(self.username), height = 35, width = 80)
+            self.decision_button_alt = ctk.CTkButton(
+                self,
+                text="Reject",
+                command= lambda : self.controller.reject_friend_request(self.username),
+                height = 35,
+                width = 80, 
+                fg_color = '#e21d27', 
+                hover_color='#ce3b43'
+                )
 
         elif decision == "Pending":
-            self.decision_button = ctk.CTkButton(self, text="Pending", height = 20, width = 45, state = "off")
+            self.decision_button = ctk.CTkButton(self, text="Pending", height = 35, width = 80, state = "off")
         elif decision == "Remove":
-            self.decision_button = ctk.CTkButton(self, text="Remove", command= lambda : self.controller.remove_friend(self.username), height = 20, width = 45)
+            self.decision_button = ctk.CTkButton(self, text="Remove", command= lambda : self.controller.remove_friend(self.username), height = 35, width = 80)
 
         if self.decision_button:
-            self.decision_button.grid(column = 2, row = 0, rowspan = 2, sticky = 'e')
+            self.decision_button.grid(column = 3, row = 0, rowspan = 2, sticky = 'e')
         if self.decision_button_alt:
-            self.decision_button_alt.grid(column = 1, row = 0, rowspan = 2, sticky = 'e')
+            self.decision_button_alt.grid(column = 2, row = 0, rowspan = 2, sticky = 'e', padx = (0,10))
