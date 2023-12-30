@@ -1,11 +1,9 @@
 import socket
 import logging
-import json
 import sys
 import time
-from datetime import datetime
 from threading import Thread, Event
-from controller_protocol import Controller
+from controller import Controller
 
 import sys
 sys.path.append('../')
@@ -15,7 +13,7 @@ sys.path.append('client/')
 import pickle
 
 class Client():
-    def __init__(self, controller: Controller, offline_mode = False) -> None:
+    def __init__(self, controller: Controller) -> None:
         self.controller = controller
         self.close_event = Event()
         
@@ -26,7 +24,6 @@ class Client():
         #172.20.4.155
         self.HOST = "192.168.0.73"
         
-        if offline_mode: return
         self.server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         #self.server_conn.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 102400)
         self.server_conn.connect((self.HOST, self.PORT))
@@ -53,7 +50,6 @@ class Client():
     def server_messages(self):
         while not self.close_event.is_set():
             try:
-
                 msgs = self.receive_msg()
                 for msg in msgs:                  
                     logging.info(f"[MESSAGE RECEIVED] {msg}")
@@ -65,7 +61,7 @@ class Client():
                             if msg.success:
                                 self.controller.login_approved(msg.user_id, msg.username, msg.firstname, msg.lastname, msg.email, msg.dob, msg.account_created)
                             else:
-                                self.controller.login_failed()
+                                self.controller.login_failed(msg.error_decription)
                         case ChannelCreateResponse():
                             if msg.success:
                                 self.controller.create_channel(
@@ -92,6 +88,10 @@ class Client():
                             self.controller.friend_request_decision(msg.username, msg.success)
                         case FriendStatusNotif():
                             self.controller.friend_status_notif(msg.username, msg.firstname, msg.lastname, msg.decision)
+                        case SignUpResponse():
+                            self.controller.signup_response(msg.success, msg.error_decription)
+                        case SignUpConfirmation():
+                            self.controller.signup_confirmation(msg.success, msg.user_id)
                         case _:
                             pass
 

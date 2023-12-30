@@ -1,7 +1,8 @@
 from typing import Dict
 from dataclasses import dataclass
-from datetime import datetime
+from enum import Enum
 
+from datetime import datetime
 
 @dataclass
 class TCPMessage:
@@ -121,10 +122,16 @@ class AuthMessage(TCPMessage):
 @dataclass
 class LoginAttempt(AuthMessage):
     username: str
+    password: str
+
+class LoginError(Enum):
+    USERNAME_NOT_FOUND = 1
+    PASSWORD_INCORRECT = 2
 
 @dataclass
 class LoginResponse(AuthMessage):
     success: bool
+    error_decription: LoginError
     user_id: int
     username: str
     firstname: str
@@ -132,6 +139,7 @@ class LoginResponse(AuthMessage):
     email: str
     dob: datetime
     account_created: str
+
 
 @dataclass
 class SignUpAttempt(AuthMessage):
@@ -141,6 +149,35 @@ class SignUpAttempt(AuthMessage):
     email: str
     password: str
     dob: datetime
+
+class SignUpError(Enum):
+    USERNAME_TAKEN = 1
+    EMAIL_TAKEN = 2
+
+@dataclass
+class SignUpResponse(AuthMessage):
+    success: bool
+    error_decription: SignUpError
+
+@dataclass
+class EmailVerificationCodeAttempt(AuthMessage):
+    code: str
+    username: str
+    firstname: str
+    lastname: str
+    email: str
+    password: str
+    dob: datetime
+
+@dataclass
+class SignUpConfirmation(AuthMessage):
+    success: bool
+    user_id: int
+
+@dataclass
+class PasswordResetAttempt(AuthMessage):
+    email: str
+    password: str
 
 
 class CodeLookUp:

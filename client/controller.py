@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import tkinter as tk
 import logging
+from threading import Thread
 
 from CTkMessagebox import CTkMessagebox
 from copy import copy
@@ -19,7 +20,6 @@ from windows.core_app.core_app_entry import CoreAppEntryPointWindow
 from windows.add_channel import AddChannelWindow
 from windows.settings import SettingWindow
 from windows.search import SearchWindow
-from windows.password_reset import PasswordResetWindow
 from suggestions.word_suggestion_API import WordSuggestionAPI
 
 class Controller:
@@ -27,11 +27,13 @@ class Controller:
     def __init__(self, root: ctk.CTk) -> None:
         
         self.root = root
+
         self.user_id: int = None
         self.username: str = None
         self.firstname: str = None
         self.lastname: str = None    
         self.email: str = None
+        self.password: str = None
         self.dob: datetime = None
         self.account_created: str = None    
         self.logged_in: bool = False 
@@ -64,8 +66,8 @@ class Controller:
             CoreAppEntryPointWindow, 
             AddChannelWindow, 
             SearchWindow, 
-            SettingWindow, 
-            PasswordResetWindow):
+            SettingWindow
+            ):
 
             frame = FrameClass(self.root_container, self)
             self.frames[FrameClass.__name__] = frame
@@ -79,7 +81,6 @@ class Controller:
         self.add_channel_window: AddChannelWindow = self.frames[WindowTypes.AddChannelWindow]
         self.search_window: SearchWindow = self.frames[WindowTypes.SearchWindow]
         self.setting_window: SettingWindow = self.frames[WindowTypes.SettingWindow]
-        self.password_reset_window: PasswordResetWindow = self.frames[WindowTypes.PasswordResetWindow]
         self.switch_frame(WindowTypes.LoginWindow)
 
         self.root_container.pack(side = "top", fill = "both", expand = True)
@@ -177,11 +178,12 @@ class Controller:
 
         cfs = self.core_app.channel_frame.channel_frames
         self.outgoing_msgs.append(ChannelLeave(self.current_channel_id))
-        cfs.pop(self.current_channel_id)
-        self.core_app.left_side_frame.remove_channel_button(self.current_channel_id)
-        #if other channels exist
-        if cfs.keys():
-            self.switch_channel(list(cfs.keys())[0])
+        if self.current_channel_id in cfs:
+            cfs.pop(self.current_channel_id)
+            self.core_app.left_side_frame.remove_channel_button(self.current_channel_id)
+            #if other channels exist
+            if cfs.keys():
+                self.switch_channel(list(cfs.keys())[0])
         
     def user_left_channel_update(self, channel_id, username):
         #Remove username of the user who left from the list stored in the channel frame
@@ -249,12 +251,13 @@ class Controller:
         self.search_window.central_search_frame.results_frame.set_results(response_data)
 
     # //// Login ////
-    def attempt_login(self, name: str) -> None:
-        self.username = name
-        self.core_app.username = name
+    def attempt_login(self, username: str, password: str) -> None:
+        self.username = username
+        self.core_app.username = username
         self.outgoing_msgs.append(
             LoginAttempt(
-            username=name
+            username=username,
+            password=password
             )
         )
 
@@ -271,9 +274,11 @@ class Controller:
 
         self.setting_window.information_frame.create_labels(username, firstname, lastname, email, dob.strftime(r'%Y:%m:%d'), account_created)
 
-    def login_failed(self):
-        self.login_window.login_failed()
-
+    def login_failed(self, error_decription):
+        if error_decription == LoginError.USERNAME_NOT_FOUND:
+            CTkMessagebox(title = "Login Attempt Failed", message= "The username you have entered does not exist. ", icon="cancel")
+        elif error_decription == LoginError.PASSWORD_INCORRECT:
+            CTkMessagebox(title = "Login Attempt Failed", message= "The password you have entered is incorrect. ", icon="cancel")
 
     # //// Sign up ////
     def signup_request(self) -> None:
@@ -283,29 +288,61 @@ class Controller:
         day = int(detail_entry_frame.date_entry_frame.day_entry_box.get())
         year = int(detail_entry_frame.date_entry_frame.year_entry_box.get())
         month = detail_entry_frame.date_entry_frame.MONTHS.index(month_str) + 1
-        username = detail_entry_frame.top_entry_frame.username_entry_box.get()
-        firstname = detail_entry_frame.top_entry_frame.firstname_entry_box.get()
-        lastname = detail_entry_frame.top_entry_frame.lastname_entry_box.get()
 
+        self.username = detail_entry_frame.top_entry_frame.username_entry_box.get()
+        self.firstname = detail_entry_frame.top_entry_frame.firstname_entry_box.get()
+        self.lastname = detail_entry_frame.top_entry_frame.lastname_entry_box.get()
+        self.email = detail_entry_frame.top_entry_frame.email_entry_box.get()
+        self.password = detail_entry_frame.top_entry_frame.password_entry_box.get()
+        self.dob = datetime(year, month, day)
+        self.account_created = "Account Created: Just Now"
         self.outgoing_msgs.append(
             SignUpAttempt(
-                username = username,
-                firstname = firstname,
-                lastname = lastname,
-                email = detail_entry_frame.top_entry_frame.email_entry_box.get(),
-                password = detail_entry_frame.top_entry_frame.password_entry_box.get(),
-                dob = datetime(year, month, day)
+                username = self.username,
+                firstname = self.firstname,
+                lastname = self.lastname,
+                email = self.email,
+                password = self.password,
+                dob = self.dob
             )
         )
         
-        self.username = username
-        self.firstname = firstname
-        self.lastname = lastname
-        self.core_app.username = username
+        self.core_app.username = self.username
 
-    def signup_response(self) -> None: 
-        self.logged_in = True
+    def signup_response(self, success: str, error: SignUpError) -> None:
+        if success:
+            self.email_verification_window.set_email(self.signup_window.detail_entry_frame.top_entry_frame.email_entry_box.get())
+            self.switch_frame(WindowTypes.EmailVerificationWindow)
+        else:
+            if error == SignUpError.EMAIL_TAKEN:
+                CTkMessagebox(title = "Sign up error", message= "The email you have entered is already in use", icon="cancel")
+            elif error == SignUpError.USERNAME_TAKEN:
+                CTkMessagebox(title = "Sign up error", message= "The username you have entered is already in use", icon="cancel")
 
+
+    def verify_code(self, code: str) -> None: 
+        self.outgoing_msgs.append(
+            EmailVerificationCodeAttempt(
+                code = code,
+                username = self.username,
+                firstname = self.firstname,
+                lastname = self.lastname,
+                email = self.email,
+                password = self.password,
+                dob = self.dob                
+            )
+        )
+
+    def signup_confirmation(self, success: bool, user_id: int) -> None:
+        if success:
+            self.user_id = user_id
+            self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
+            self.logged_in = True
+        else:
+            self.switch_frame(WindowTypes.LoginWindow)
+            CTkMessagebox(title = "Sign up error", message= "The code you have entered is incorrect", icon="cancel")
+        #        self.setting_window.information_frame.create_labels(username, firstname, lastname, email, dob.strftime(r'%Y:%m:%d'), account_created)
+        self.setting_window.information_frame.create_labels(self.username, self.firstname, self.lastname, self.email, self.dob.strftime(r'%Y:%m:%d'), self.account_created)
 
     # //// Text Suggestions ////
 

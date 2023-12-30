@@ -34,6 +34,6 @@ GraphLibrary/GraphLibCpp/GraphLibCpp.vcxproj.user
 
 server/chatapp.csv
 server/database/graphdbtest.csv
-
+server/mailtrapcreds.json
 .env
 .vscode

@@ -1,7 +1,12 @@
-import copy
 import logging
+import json
+import smtplib
+
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from threading import Thread
+from random import choices
+from string import ascii_lowercase
 
 from typing import List, Dict, Any
 from dataAccessLayer import DataAccessLayer
@@ -24,7 +29,6 @@ class Controller:
         #Client ID: List[Message Object]
         self.messages: Dict[int, List[TCPMessage]]= {}
 
-
     # //// Helper ////
 
     def add_message_by_id(self, client_id: int, msg: TCPMessage):
@@ -34,6 +38,31 @@ class Controller:
     def save_client_user_id_mapping(self, client_id: int , user_id: int):
         self.client_id_user_id_map[client_id] = user_id
         self.user_id_client_id_map[user_id] = client_id
+
+    def send_email(self, email: str, code: str):
+
+        with open('mailtrapcreds.json') as f:
+            creds = json.load(f)
+            sender = creds['sender']
+            password = creds['password']
+            port = creds['port']
+            host = creds['host']
+            username = creds['username']
+            message = f"""
+From: From SocioX <donotreply@sociox>
+To: To User <{email}>
+Subject: Confirmation code
+
+
+This is your confirmation code: {code}""".strip()
+
+            with smtplib.SMTP(host, port) as server:
+                server.ehlo()
+                server.starttls()
+                server.ehlo()
+                server.login(username, password)
+                server.sendmail(sender, [email], message)    
+                logging.info(f"Email sent to {email}")
 
     @staticmethod
     def format_age(start: datetime) -> str:
@@ -127,7 +156,6 @@ class Controller:
         connections = self.dal.get_user_friend_connections(user_id)
         if connections == ([], []):
             return
-        
         outgoing_reqs, incoming_reqs = connections
         for request in outgoing_reqs:
             if request['Accepted']:
@@ -190,24 +218,36 @@ class Controller:
                 #TODO: remove client_id from client_ids (proper termination of process)
                 pass
             case LoginAttempt():
-                user_id = self.dal.get_user_id(msg.username)          
+                user_id = self.dal.get_user_id_from_username(msg.username)
+
+                unsuccesful_login_response = LoginResponse(
+                    success=False,
+                    error_decription= None,
+                    user_id = None,
+                    username = None,
+                    firstname = None,
+                    lastname = None,
+                    email = None,
+                    dob = None,
+                    account_created = None
+                )
+
+                #If user does not exist in the database.
                 if user_id == None:
-                    self.add_message_by_id(client_id, LoginResponse(
-                        success=False,
-                        user_id = None,
-                        username = None,
-                        firstname = None,
-                        lastname = None,
-                        email = None,
-                        dob = None,
-                        account_created = None
-                    ))
+                    unsuccesful_login_response.error_decription = LoginError.USERNAME_NOT_FOUND
+                    self.add_message_by_id(client_id, unsuccesful_login_response)
+
+                elif not self.dal.verify_password(user_id, msg.password):
+                    unsuccesful_login_response.error_decription = LoginError.PASSWORD_INCORRECT
+                    self.add_message_by_id(client_id, unsuccesful_login_response)
+
                 else:
                     self.save_client_user_id_mapping(client_id, user_id)
                     user_data = self.dal.get_user_data(user_id)[0]
                     self.add_message_by_id(client_id, LoginResponse(
                         user_id= user_id,
                         success=True,
+                        error_decription= None,
                         username = user_data['Username'],
                         firstname = user_data['Firstname'],
                         lastname = user_data['Lastname'],
@@ -216,6 +256,69 @@ class Controller:
                         account_created = "Account created: " + self.format_age(user_data['DateAccountCreated'])
                     ))
                     self.update_client(client_id)
+                    self.dal.recalculate_weight(user_id)
+
+            case SignUpAttempt():
+
+                #Check if username and email can be added to the DB
+                unique_username = self.dal.get_user_id_from_username(msg.username) == None
+                unique_email = self.dal.get_user_id_from_email(msg.email) == None
+                if unique_username and unique_email:
+                    self.add_message_by_id(client_id, SignUpResponse(
+                        success=True,
+                        error_decription= None
+                    ))
+                    CODE_LENGTH = 5
+                    code = ''.join(choices(ascii_lowercase, k=CODE_LENGTH))
+
+                    #Mail trap limit
+                    #Thread(target=self.send_email, args=(msg.email, code)).start()
+                    
+                    print(code)
+                    self.dal.add_email_code(msg.email, code)
+
+
+                elif not unique_username:
+                    self.add_message_by_id(client_id, SignUpResponse(
+                        success=False,
+                        error_decription= SignUpError.USERNAME_TAKEN
+                    ))
+                elif not unique_email:
+                    self.add_message_by_id(client_id, SignUpResponse(
+                        success=False,
+                        error_decription= SignUpError.EMAIL_TAKEN
+                    ))
+                
+            case EmailVerificationCodeAttempt():
+
+                correct_code = self.dal.get_most_recent_email_code(msg.email)
+                if correct_code == msg.code:
+                    #Successful code therefore user is created and added to the DB
+                    self.dal.add_user(
+                    msg.username,
+                    msg.firstname,
+                    msg.lastname,
+                    msg.email,
+                    msg.password,
+                    msg.dob
+                    )
+
+                    user_id = self.dal.get_user_id_from_username(msg.username)
+                    
+                    self.add_message_by_id(client_id, SignUpConfirmation(
+                        success= True,
+                        user_id = user_id,
+                    ))
+
+                    self.dal.recalculate_weight(user_id)
+                    self.save_client_user_id_mapping(client_id, user_id)
+                else:
+                    self.add_message_by_id(client_id, SignUpConfirmation(
+                        success= False,
+                        user_id = None,
+                    ))
+                
+            
             case _:
                 user_id = self.client_id_user_id_map[client_id]
                 self.handle_logged_in_message(msg, client_id, user_id)
@@ -260,46 +363,58 @@ class Controller:
                     channel_name= channel_data['ChannelName']
                 ))
             case SearchRequest():
-                RESPONSE_LIMIT = 10
-                responses = self.dal.search_request(user_id, msg.content)[:RESPONSE_LIMIT]
-                
-                for response in responses:
-                    response_user_id = response.pop('UserID', None)
-                        
-                    account_created_date = response.pop("DateAccountCreated", None)
 
-                    account_age_formatted = "Account created: " + self.format_age(account_created_date)
+                if msg.content:
+                    RESPONSE_LIMIT = 10
+                    responses = self.dal.search_request(user_id, msg.content)[:RESPONSE_LIMIT]
                     
-                    response["AccountAge"] = account_age_formatted
+                    for response in responses:
+                        response_user_id = response.pop('UserID', None)
+                            
+                        account_created_date = response.pop("DateAccountCreated", None)
 
-                self.add_message_by_id(client_id, SearchReponse(
-                    response_data = responses
-                ))
-            case SignUpAttempt():
-                self.dal.add_user(
-                    msg.username,
-                    msg.firstname,
-                    msg.lastname,
-                    msg.email,
-                    msg.dob
-                )
+                        account_age_formatted = "Account created: " + self.format_age(account_created_date)
+                        
+                        response["AccountAge"] = account_age_formatted
 
-                user_id = self.dal.get_user_id(msg.username)
-                
-                self.add_message_by_id(client_id, LoginResponse(
-                    success= True,
-                    user_id = user_id,
-                    username = msg.username,
-                    firstname = msg.firstname,
-                    lastname = msg.lastname,
-                    email = msg.email,
-                    dob = msg.dob,
-                    account_created = "Just now"
-                ))     
-                self.save_client_user_id_mapping(client_id, user_id)
-                
+                    self.add_message_by_id(client_id, SearchReponse(
+                        response_data = responses
+                    ))
+                #If the user search is empty then the user is requesting suggestions
+                else:
+                    username = self.dal.get_user_data(user_id)[0]['Username']
+                    friends = set([friend["Username"] for friend in self.dal.get_user_friends(user_id)])
+                    response_data = []
+                    #Annoying way of using the cpp function to get suggestions
+                    for _ in range(5):
+                        suggestion = self.dal.get_user_suggestions(username, friends)
+                        
+                        if suggestion == "":
+                            break
+
+                        #So the same user isn't suggested twice
+                        friends.add(suggestion)
+
+                        friend_id = self.dal.get_user_id_from_username(suggestion)
+                        response = self.dal.get_user_data(friend_id)[0]
+                        #Remove sensitive data from response
+                        response.pop("PasswordHash", None)
+                        response.pop("Email", None)
+                        response.pop("DateOfBirth", None)
+                        response.pop("PasswordSalt", None)
+                        #Add formatting to the account age
+                        account_created_date = response.pop("DateAccountCreated", None)
+                        account_age_formatted = "Account created: " + self.format_age(account_created_date)
+
+                        response["AccountAge"] = account_age_formatted
+                        response_data.append(response)
+    
+                    
+                    self.add_message_by_id(client_id, SearchReponse(
+                        response_data = response_data
+                    ))
             case FriendRequest():
-                receiver_id = self.dal.get_user_id(msg.username)
+                receiver_id = self.dal.get_user_id_from_username(msg.username)
                 self.dal.add_friend_request(user_id, receiver_id)
 
                 #Check if the receiver is online
@@ -312,7 +427,7 @@ class Controller:
                         lastname= sender_data['Lastname']
                     ))
             case FriendRequestDecision():
-                sender_id = self.dal.get_user_id(msg.username)
+                sender_id = self.dal.get_user_id_from_username(msg.username)
                 if msg.success:
                     self.dal.accept_friend_request(sender_id, user_id)
                 else:
@@ -327,7 +442,7 @@ class Controller:
                         username = sender_data['Username'],
                     ))
             case FriendRemoval():
-                other_user_id = self.dal.get_user_id(msg.username)
+                other_user_id = self.dal.get_user_id_from_username(msg.username)
                 self.dal.remove_friend(user_id, other_user_id)
                 if other_user_id in self.user_id_client_id_map:
                     other_user_client_id = self.user_id_client_id_map[other_user_id]

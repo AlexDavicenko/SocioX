@@ -179,8 +179,6 @@ def get_user_suggestions_test():
 
     g = create_mock_graph()
     
-
-
     #Test for node A
     friends = set()
     closest = []
@@ -213,6 +211,14 @@ def get_user_suggestions_test():
         friends.add(ans)
     if closest != ['C', 'A', 'B', 'G', 'J', 'F', 'E', 'D']:
         return False
+    
+    #Testing for empty (crashless) output when no more nodes are left
+    for _ in range(5):
+        ans = g.closestNonFriendNode("H", friends)
+        if ans != "":
+            return False
+
+    
 
     return True
 

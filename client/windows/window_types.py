@@ -8,4 +8,3 @@ class WindowTypes:
     AddChannelWindow = 'AddChannelWindow'
     SearchWindow = 'SearchWindow'
     SettingWindow = 'SettingWindow'
-    PasswordResetWindow = 'PasswordResetWindow'

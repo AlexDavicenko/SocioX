@@ -3,6 +3,7 @@ from dateutil.relativedelta import relativedelta
 from database.mySQLInterface import MySQLConnection
 from database.graphDBInterface import GraphDBConnection
 from database.region import Region
+from bcryptCPP import bcrypt, generate_random_salt
 
 def fill_data(db_name, gdb_name):
     usernames = []
@@ -11,12 +12,15 @@ def fill_data(db_name, gdb_name):
         with open("database/mockDBdata.txt", "r") as f:
             mock_data = f.read().splitlines()
             for i in range(len(mock_data)):
+                salt = generate_random_salt()
                 firstname, lastname = mock_data[i].split(" ")
                 db.add_user(
                     username= firstname.lower()+str(i), #Ensure unique
                     firstname= firstname,
                     lastname= lastname,
                     email= f"{firstname}.{lastname}@gmail.com",
+                    password_hash= bcrypt("pass", salt, 8),
+                    password_salt= salt,
                     region=regions[i%5],
                     date_of_birth=datetime(1990,1,1) + relativedelta(year = i//12, month=(i%12)+1,day=7) # Random looking consistent birthdays
                 )                

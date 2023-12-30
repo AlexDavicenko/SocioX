@@ -367,6 +367,7 @@ char* generate_random_salt() {
     return salt;
 }
 
+//Exporting functions
 PYBIND11_MODULE(bcryptCPP, m) {
     m.def("bcrypt", &bcrypt, "Compute the bcrypt hash of 64 character long password\n Password: str\n Salt: str(Hex)\nCost: int");
 

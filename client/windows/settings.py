@@ -121,9 +121,15 @@ class FriendDecisionFrame(ctk.CTkFrame):
         self.decision_button_alt: ctk.CTkButton = None
 
         if decision == "Accept":
-            self.decision_button = ctk.CTkButton(self, text="Accept", command= lambda : self.controller.accept_friend_request(self.username), height = 35, width = 80)
-            self.decision_button_alt = ctk.CTkButton(
-                self,
+            self.decision_button = ctk.CTkButton(self, 
+                text="Accept", 
+                command= lambda : self.controller.accept_friend_request(self.username), 
+                height = 35, 
+                width = 80,
+                fg_color = '#03a551', 
+                hover_color='#06a503'
+                )
+            self.decision_button_alt = ctk.CTkButton(self,
                 text="Reject",
                 command= lambda : self.controller.reject_friend_request(self.username),
                 height = 35,
@@ -134,8 +140,16 @@ class FriendDecisionFrame(ctk.CTkFrame):
 
         elif decision == "Pending":
             self.decision_button = ctk.CTkButton(self, text="Pending", height = 35, width = 80, state = "off")
+            
         elif decision == "Remove":
-            self.decision_button = ctk.CTkButton(self, text="Remove", command= lambda : self.controller.remove_friend(self.username), height = 35, width = 80)
+            self.decision_button = ctk.CTkButton(self, 
+                text="Remove", 
+                fg_color = '#e21d27', 
+                hover_color='#ce3b43', 
+                command= lambda : self.controller.remove_friend(self.username), 
+                height = 35, 
+                width = 80
+                )
 
         if self.decision_button:
             self.decision_button.grid(column = 3, row = 0, rowspan = 2, sticky = 'e')

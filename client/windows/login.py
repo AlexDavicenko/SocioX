@@ -28,10 +28,10 @@ class LoginWindow(Window):
         self.controller.add_binding('<Return>', self.login_button_clicked)
 
     def login_button_clicked(self, e = None) -> None:
-        self.controller.attempt_login(self.upper_frame.input_boxes_frame.username_entry_box.get())
-
-    def login_failed(self):
-        CTkMessagebox(title = "Login Attempt Failed", message= "The username, password combination you have entered is incorrect. ", icon="cancel") 
+        self.controller.attempt_login(
+            self.upper_frame.input_boxes_frame.username_entry_box.get(),
+            self.upper_frame.input_boxes_frame.password_input_frame.password_entry_box.get()
+        )
 
     def show_password_button_clicked(self) -> None:
 
@@ -62,11 +62,6 @@ class LoginWindow(Window):
 
     def signup_button_clicked(self) -> None:
         self.controller.switch_frame(WindowTypes.SignUpWindow)
-        
-
-    def forgot_password_button_clicked(self) -> None:
-        self.controller.switch_channel(WindowTypes.PasswordResetWindow)
-
     
     def github_button_clicked(self) -> None:
         wb.open("https://github.com/AlexDavicenko/ChatApp")
@@ -111,11 +106,9 @@ class PasswordInputFrame(ctk.CTkFrame):
         
         self.password_entry_box = PlaceHolderEntry(self, "Enter password", show = "*", font=('TkDefaultFont', 16), width = 330, height = 45)
         self.show_password_button = ctk.CTkButton(self, text = "Show", command=master.show_password_button_clicked, width = 70, height = 30)
-        self.forgot_password_button = ctk.CTkButton(self, text = "Forgot Password", command=master.forgot_password_button_clicked, width = 130, height = 30)
         
         self.password_entry_box.grid(padx = 10, pady = 0, column = 0, row = 0, columnspan= 2)
         self.show_password_button.grid(padx = 10, sticky = 'w', pady = 10, column = 0, row = 1)
-        self.forgot_password_button.grid(sticky = 'e',  padx = 10, pady = 10, column = 1, row = 1)
 
         self.password_entry_box.bind("<FocusOut>", master.password_entry_box_focus_out)
     

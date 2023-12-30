@@ -97,11 +97,9 @@ public:
             list<pair<Node*, float>> *edgeList = edgeMap[nodeA];
 
             //Remove edge if one already exists
-            for (auto& p : *edgeList) {
-                if (p.first->id == nodeB->id) {
-                    edgeList->remove(p);
-                }
-            }
+            edgeList->remove_if([nodeBId](pair<Node*, float> p) {
+                return p.first->id == nodeBId;
+                });
 
             edgeMap[nodeA]->push_back(make_pair(nodeB, weight));
         }
@@ -164,7 +162,7 @@ public:
             //Loop over every edge
             for (auto edge : *edgeMap[curNode]) {
 
-                //Unpackage Item 
+                //Unpackage pair 
                 Node* newNode = edge.first;
                 float weight = edge.second;
 
@@ -182,8 +180,9 @@ public:
             }
         }
 
+        #ifdef DEBUG 
         cout << "No node found" << endl;
-        
+        #endif
         return "";
     }
 

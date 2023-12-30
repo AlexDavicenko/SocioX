@@ -17,7 +17,7 @@ def reset_database(db_name, gdb_name):
             Region varchar(20),
             DateOfBirth datetime,
             DateAccountCreated datetime,
-            PasswordSalt varchar(24),
+            PasswordSalt varchar(32),
             PasswordHash varchar(72),
             PRIMARY KEY (UserID),
             UNIQUE (Username)
@@ -73,7 +73,7 @@ def reset_database(db_name, gdb_name):
             FriendConnectionID int(11) NOT NULL AUTO_INCREMENT,
             FriendRequestSenderID int(11) NOT NULL,
             FriendRequestReceiverID int(11) NOT NULL,
-            DateRequestAccepted datetime NOT NULL,
+            DateRequestAccepted datetime NULL,
             Accepted boolean NOT NULL,
             DateRequestCompleted datetime,
             PRIMARY KEY (FriendConnectionID),
@@ -94,6 +94,20 @@ def reset_database(db_name, gdb_name):
             ) 
             """
             )
+        db.create_table("EmailCodes", 
+            """
+            CREATE TABLE EmailCodes (
+            CodeID int(11) NOT NULL AUTO_INCREMENT,
+            UserID int(11) NULL,
+            DateCodeSent datetime NOT NULL,
+            Email varchar(50) NOT NULL,
+            Code TEXT,
+            PRIMARY KEY (CodeID),
+            FOREIGN KEY (UserID) REFERENCES Users(UserID)
+            ) 
+            """
+            )
+
 
 
 

@@ -18,8 +18,6 @@ class SearchWindow(Window):
         self.grid_columnconfigure(1,weight=5)
         self.grid_columnconfigure(2,weight=1)
 
-
-
         self.central_search_frame = CentralSearchFrame(self, controller)
         self.central_search_frame.grid(column = 0, row = 0, sticky = 'nsew', columnspan = 3)
 
@@ -29,13 +27,12 @@ class SearchWindow(Window):
         self.get_suggestions_button = ctk.CTkButton(self, text = 'Generate Suggestions', command = self.get_suggestions_button_pressed, width= 120, height = 40)
         self.get_suggestions_button.grid(padx = 10, pady = 10, column = 0, row = 1)
 
-
     def back_button_pressed(self, e = None):
         self.controller.switch_frame(WindowTypes.CoreAppEntryPointWindow)
 
 
     def get_suggestions_button_pressed(self, e = None): 
-        pass
+        self.controller.search_request("")
 
 class CentralSearchFrame(ctk.CTkFrame):
     def __init__(self, parent: SearchWindow, controller: Controller):

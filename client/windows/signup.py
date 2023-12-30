@@ -122,7 +122,6 @@ class SignUpFrame(ctk.CTkFrame):
         pass_entry1 = self.parent.top_entry_frame.password_entry_box.get()
         pass_entry2 = self.parent.top_entry_frame.password_repeat_entry_box.get()
         
-        print(pass_entry1, pass_entry2)
         if pass_entry1 == "":
             CTkMessagebox(title = "Invalid password", message= "Please enter a password", icon="cancel")
             return
@@ -134,7 +133,6 @@ class SignUpFrame(ctk.CTkFrame):
             return
         
         self.controller.signup_request()
-        self.controller.switch_frame(WindowTypes.EmailVerificationWindow)
 
 
 
