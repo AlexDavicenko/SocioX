@@ -119,7 +119,10 @@ class Controller:
                 TextMessage(self.current_channel_id, content)
             )
         else:
-            CTkMessagebox(title = "Channel Error", message= "You are not in a channel, join or create a channel to send messages.", icon="cancel") 
+            CTkMessagebox(
+                title = "Channel Error", 
+                message= "You are not in a channel, join or create a channel to send messages.", 
+                icon="cancel") 
 
 
     # //// Channels ////
@@ -140,7 +143,8 @@ class Controller:
     def switch_channel(self, channel_id):
         self.current_channel_id = channel_id
         self.core_app.channel_frame.switch_channel(channel_id)
-        self.core_app.right_side_frame.user_list_frame.set_users(self.core_app.channel_frame.current_channel_frame.users)
+        users = self.core_app.channel_frame.current_channel_frame.users
+        self.core_app.right_side_frame.user_list_frame.set_users(users)
 
     def user_join_channel_update(self, channel_id: int, username: str, firstname: str, lastname: str) -> None:
         #rerender if in focus
@@ -148,8 +152,9 @@ class Controller:
         
         #If a channel frame is current being viewed
         if self.current_channel_id == channel_id:
-            self.core_app.right_side_frame.user_list_frame.set_users(self.core_app.channel_frame.current_channel_frame.users)
-
+            users = self.core_app.channel_frame.current_channel_frame.users
+            self.core_app.right_side_frame.user_list_frame.set_users(users)
+    
 
     def channel_join_request(self, channel_id: int):
         if channel_id not in self.core_app.channel_frame.channel_frames:
@@ -261,7 +266,16 @@ class Controller:
             )
         )
 
-    def login_approved(self, user_id: int, username: str, firstname: str, lastname: str, email: str, dob: datetime, account_created: str) -> None:
+    def login_approved(
+            self,
+            user_id: int, 
+            username: str, 
+            firstname: str, 
+            lastname: str, 
+            email: str, 
+            dob: datetime, 
+            account_created: str):
+    
         self.user_id = user_id
         self.username = username
         self.firstname = firstname
@@ -272,13 +286,28 @@ class Controller:
         self.logged_in = True
         self.switch_frame(WindowTypes.CoreAppEntryPointWindow)
 
-        self.setting_window.information_frame.create_labels(username, firstname, lastname, email, dob.strftime(r'%Y:%m:%d'), account_created)
+        self.setting_window.information_frame.create_labels(
+            username, 
+            firstname, 
+            lastname, 
+            email, 
+            dob.strftime(r'%Y:%m:%d'), 
+            account_created
+            )
 
     def login_failed(self, error_decription):
         if error_decription == LoginError.USERNAME_NOT_FOUND:
-            CTkMessagebox(title = "Login Attempt Failed", message= "The username you have entered does not exist. ", icon="cancel")
+            CTkMessagebox(
+                title = "Login Attempt Failed", 
+                message= "The username you have entered does not exist. ", 
+                icon="cancel"
+                )
         elif error_decription == LoginError.PASSWORD_INCORRECT:
-            CTkMessagebox(title = "Login Attempt Failed", message= "The password you have entered is incorrect. ", icon="cancel")
+            CTkMessagebox(
+                title = "Login Attempt Failed", 
+                message= "The password you have entered is incorrect. ", 
+                icon="cancel"
+                )
 
     # //// Sign up ////
     def signup_request(self) -> None:
@@ -311,13 +340,22 @@ class Controller:
 
     def signup_response(self, success: str, error: SignUpError) -> None:
         if success:
-            self.email_verification_window.set_email(self.signup_window.detail_entry_frame.top_entry_frame.email_entry_box.get())
+            #changed
+            self.email_verification_window.set_email(self.email)
             self.switch_frame(WindowTypes.EmailVerificationWindow)
         else:
             if error == SignUpError.EMAIL_TAKEN:
-                CTkMessagebox(title = "Sign up error", message= "The email you have entered is already in use", icon="cancel")
+                CTkMessagebox(
+                    title = "Sign up error", 
+                    message= "The email you have entered is already in use", 
+                    icon="cancel"
+                    )
             elif error == SignUpError.USERNAME_TAKEN:
-                CTkMessagebox(title = "Sign up error", message= "The username you have entered is already in use", icon="cancel")
+                CTkMessagebox(
+                    title = "Sign up error", 
+                    message= "The username you have entered is already in use", 
+                    icon="cancel"
+                    )
 
 
     def verify_code(self, code: str) -> None: 
@@ -341,8 +379,14 @@ class Controller:
         else:
             self.switch_frame(WindowTypes.LoginWindow)
             CTkMessagebox(title = "Sign up error", message= "The code you have entered is incorrect", icon="cancel")
-        #        self.setting_window.information_frame.create_labels(username, firstname, lastname, email, dob.strftime(r'%Y:%m:%d'), account_created)
-        self.setting_window.information_frame.create_labels(self.username, self.firstname, self.lastname, self.email, self.dob.strftime(r'%Y:%m:%d'), self.account_created)
+        self.setting_window.information_frame.create_labels(
+            self.username, 
+            self.firstname,
+            self.lastname, 
+            self.email, 
+            self.dob.strftime(r'%Y:%m:%d'), 
+            self.account_created
+            )
 
     # //// Text Suggestions ////
 

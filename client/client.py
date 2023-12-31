@@ -7,7 +7,7 @@ from controller import Controller
 
 import sys
 sys.path.append('../')
-from communication_protocol.communicationProtocol import send_bytes, listen_for_bytes
+from communication_protocol.communicationProtocol import TransmissionHandler
 from communication_protocol.TCPMessages import *
 sys.path.append('client/')
 import pickle
@@ -23,12 +23,13 @@ class Client():
         #192.168.0.83
         #172.20.4.155
         self.HOST = "192.168.0.73"
-        
         self.server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         #self.server_conn.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 102400)
         self.server_conn.connect((self.HOST, self.PORT))
-
+        self.transmission_handler = TransmissionHandler(self.server_conn, False, self.close_event)
+        self.transmission_handler.start()
         logging.info(f"Connected to server {self.HOST, self.PORT}")
+
 
     def user_input(self):
         while not self.close_event.is_set():
@@ -100,12 +101,12 @@ class Client():
                 self.close_event.set()
 
     def receive_msg(self):
-        msg = pickle.loads(listen_for_bytes(self.server_conn))
+        msg = pickle.loads(self.transmission_handler.listen_for_bytes())
         return msg
 
 
     def send_msg(self, msg: TCPMessage):
-        send_bytes(self.server_conn, pickle.dumps(msg))
+        self.transmission_handler.send_bytes(pickle.dumps(msg))
 
 
     

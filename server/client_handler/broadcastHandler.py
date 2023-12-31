@@ -7,14 +7,14 @@ from controller import Controller
 
 import sys; sys.path.append('../')
 
-from communication_protocol.communicationProtocol import send_bytes
+from communication_protocol.communicationProtocol import TransmissionHandler
 from communication_protocol.TCPMessages import *
 
 
 class BroadcastHandler:
-    def __init__(self, client: socket, close_event: Event, controller: Controller, client_id: int) -> None:
-        self.client = client
-        self.close_event = close_event
+    def __init__(self, transmission_handler: TransmissionHandler, controller: Controller, client_id: int) -> None:
+        self.transmission_handler = transmission_handler
+        self.close_event = transmission_handler.close_event
         self.controller = controller
         self.client_id = client_id
 
@@ -36,4 +36,4 @@ class BroadcastHandler:
     
 
     def send_msg(self, msg: TCPMessage) -> None:
-        send_bytes(self.client, pickle.dumps(msg))
+        self.transmission_handler.send_bytes(pickle.dumps(msg))

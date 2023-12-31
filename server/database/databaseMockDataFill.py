@@ -1,5 +1,7 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+import os
+
 from database.mySQLInterface import MySQLConnection
 from database.graphDBInterface import GraphDBConnection
 from database.region import Region
@@ -19,7 +21,7 @@ def fill_data(db_name, gdb_name):
                     firstname= firstname,
                     lastname= lastname,
                     email= f"{firstname}.{lastname}@gmail.com",
-                    password_hash= bcrypt("pass", salt, 8),
+                    password_hash= bcrypt("pass"+os.environ.get("SocioXPepper", ""), salt, 8),
                     password_salt= salt,
                     region=regions[i%5],
                     date_of_birth=datetime(1990,1,1) + relativedelta(year = i//12, month=(i%12)+1,day=7) # Random looking consistent birthdays
