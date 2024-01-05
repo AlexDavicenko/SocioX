@@ -13,7 +13,7 @@ class App(ctk.CTk):
         self.controller = Controller(self)
         
         try:
-            self.client = Client(self.controller, offline_mode =False)
+            self.client = Client(self.controller)
             Thread(target=self.client.start, args=()).start()
         except ConnectionRefusedError:
             print("Server is currently offline. Try again later!")

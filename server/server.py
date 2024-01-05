@@ -57,6 +57,12 @@ class Server:
                     client.close()
                 self.server.close()
                 self.close_event.set()
+            if console_msg == "reset":
+                self.controller.dal.reset_db()
+                print("Reset database")
+            if console_msg == "fill":
+                self.controller.dal.fill_with_mock_data()
+                print("Database filled with mock data")
 
 
 

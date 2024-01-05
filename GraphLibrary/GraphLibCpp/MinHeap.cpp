@@ -41,11 +41,11 @@ Item MinHeap::pop() {
     heapArr[head].priority = 0;
 
     int cur = 1;
-    int value = heapArr[1].priority;
+    float value = heapArr[1].priority;
     while (left(cur) < head && right(cur) < head)
     {
-        int l = heapArr[left(cur)].priority;
-        int r = heapArr[right(cur)].priority;
+        float l = heapArr[left(cur)].priority;
+        float r = heapArr[right(cur)].priority;
         if (l < value || r < value) {
             if (l < value && r < value) {
                 if (l < r) {
@@ -68,6 +68,14 @@ Item MinHeap::pop() {
         }
         else {
             break;
+        }
+    }
+
+    //Fix for a special case with a 2 sized heap where the loop above does not run :/ 
+    //PS: This is why you test your code Alex
+    if (head == 3) {
+        if (heapArr[1].priority > heapArr[2].priority) {
+            swap(1, 2);
         }
     }
 
@@ -96,7 +104,7 @@ void MinHeap::insert(Item item) {
         cur = parent(cur);
     }
 }
-void MinHeap::print_heap() {
+void MinHeap::printHeap() {
     for (int i = 1; i < size; i++) {
         if (heapArr[i].value == nullptr) {
             cout << "(" << heapArr[i].priority << "," << ")" << ", ";
@@ -108,6 +116,6 @@ void MinHeap::print_heap() {
     cout << endl;
 }
 
-bool MinHeap::is_empty() {
+bool MinHeap::isEmpty() {
     return this->head == 1;
 }

@@ -3,7 +3,9 @@
 **.idea
 **.mypy_cache
 bcrypt/
-protocol/
+RabinMiller/.idea
+RabinMiller/Cargo.lock
+RabinMiller/target
 client/email_verification/credentials.json
 client/email_verification/token.json
 client/local-cache.json
@@ -32,4 +34,10 @@ GraphLibrary/GraphLibCpp/GraphLibCpp.vcxproj
 GraphLibrary/GraphLibCpp/GraphLibCpp.vcxproj.filters
 GraphLibrary/GraphLibCpp/GraphLibCpp.vcxproj.user
 
+server/chatapp.csv
+server/database/graphdbtest.csv
+server/mailtrapcreds.json
+communication_protocol/primes_for_rsa.txt
+communication_protocol/rsabasic.ipynb
 .env
+.vscode

@@ -2,7 +2,7 @@ import tkinter as tk
 import customtkinter as ctk
 
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from controller_protocol import Controller
 
 class ChannelFrame(ctk.CTkFrame):
@@ -18,7 +18,7 @@ class ChannelFrame(ctk.CTkFrame):
         self.leave_button.grid(row = 0, column = 1, sticky= 'ew', padx = 10, pady =10)
 
 
-        self.header_label = ctk.CTkLabel(self, text = "")
+        self.header_label = ctk.CTkLabel(self, text = "", font=('TkDefaultFont', 14))
         self.header_label.grid(row = 0, column = 0, sticky= 'ew')
 
         self.message_frame_container = ctk.CTkFrame(self)
@@ -36,8 +36,8 @@ class ChannelFrame(ctk.CTkFrame):
         self.channel_frames[channel_id].add_message(username, time_sent, content)
 
     
-    def add_user(self, channel_id: int, username: str):
-        self.channel_frames[channel_id].add_user(username)
+    def add_user(self, channel_id: int, username: str, firstname: str, lastname: str):
+        self.channel_frames[channel_id].add_user(username, firstname, lastname)
 
     
 
@@ -49,7 +49,7 @@ class ChannelFrame(ctk.CTkFrame):
             self.current_channel_frame.pack_forget()
         self.current_channel_frame = channel_frame
 
-        self.header_label.configure(text =f"ChannelName:{channel_frame.channel_name} {' '*20} ChannelID: {channel_id} {' '*20} Your Name: { self.controller.username}")
+        self.header_label.configure(text =f"Your Name: { self.controller.username} {' '*20} Channel name: {channel_frame.channel_name} {' '*20} Channel ID: {channel_id}")
         channel_frame.pack_all()
         channel_frame.pack(expand = True, fill = 'both')
         channel_frame.tkraise()
@@ -63,7 +63,7 @@ class MessagesFrame(ctk.CTkScrollableFrame):
         self.channel_id = channel_id
         self.channel_name = channel_name
 
-        self.users: List[str] = []
+        self.users: List[Tuple[str, str, str]] = []
         self.messages: List[MessageFrame] = []
     
     def unpack(self):
@@ -76,14 +76,21 @@ class MessagesFrame(ctk.CTkScrollableFrame):
 
         
     def add_message(self, username: str, time_sent: datetime, content: str):
-        message_frame = MessageFrame(self, self.controller, username, time_sent.strftime('%H:%M:%S'), content)
+        firstname = None    
+        lastname = None
+        for user in self.users:
+            if user[0] == username:
+                firstname = user[1]
+                lastname = user[2]
+
+        message_frame = MessageFrame(self, self.controller, username, firstname, lastname, time_sent.strftime('%H:%M:%S'), content)
         if self.channel_id == self.controller.current_channel_id:
             message_frame.pack(expand = True, fill = ctk.X, pady = (10,10))
         self.messages.append(message_frame)
         self.scroll_to_bottom()
 
-    def add_user(self, username: str):
-        self.users.append(username)
+    def add_user(self, username: str, firstname: str, lastname: str):
+        self.users.append((username, firstname, lastname))
 
     def scroll_to_bottom(self):
         self.update()
@@ -92,16 +99,17 @@ class MessagesFrame(ctk.CTkScrollableFrame):
 
 
 class MessageFrame(ctk.CTkFrame):
-    def __init__(self, master, controller: Controller, username: str, time: str, content: str ):
+    def __init__(self, master, controller: Controller, username: str, firstname: str, lastname: str, time: str, content: str ):
         super().__init__(master, border_color = "gray", border_width= 1)
 
         self.USERNAME_FONT = ctk.CTkFont('Helvetica', 16, 'bold')
         self.MESSAGE_FONT = ctk.CTkFont('Helvetica', 12)
         self.PLUS_FONT = ctk.CTkFont('Helvetica', 15)
 
-
         self.controller = controller
         self.username = username
+        self.firstname = firstname
+        self.lastname = lastname
         self.time = time
         self.content = content
 
@@ -111,25 +119,26 @@ class MessageFrame(ctk.CTkFrame):
         self.text_frame = ctk.CTkFrame(self, corner_radius = 1)
         self.text_frame.pack(expand = True, fill = ctk.X)
 
-
         self.usernameLabel = ctk.CTkLabel(self.context_frame, text=username, font = self.USERNAME_FONT)
         self.usernameLabel.pack(side= tk.LEFT,  anchor="nw", ipadx = 10)
-
 
         self.timeLabel = ctk.CTkLabel(self.context_frame, text=time)
         self.timeLabel.pack(side= tk.RIGHT, anchor = "ne", ipadx = 10)
 
-        #If the message sender is not the client
-        if self.username != self.controller.username and self.username not in self.controller.friends:
-            self.friend_request_user_button = ctk.CTkButton(
-                self.context_frame,
-                text="+", 
-                width=20, 
-                height=20, 
-                font = self.PLUS_FONT, 
-                command= lambda : self.controller.add_friend(self.username))
-            self.friend_request_user_button.pack(side = tk.LEFT, anchor = "w", padx = 25)
+        #The user is still in the channel and the data was sent abt their first and last name
+        if self.firstname != None and self.lastname != None:
+            #If the message sender is not the user and not a friend of the user
+            if self.username != self.controller.username and self.username not in self.controller.friends:
+                self.friend_request_user_button = ctk.CTkButton(
+                    self.context_frame,
+                    text="+", 
+                    width=20, 
+                    height=20, 
+                    font = self.PLUS_FONT, 
+                    command= lambda : self.controller.send_friend_request(self.username, self.firstname, self.lastname))
+                self.friend_request_user_button.pack(side = tk.LEFT, anchor = "w", padx = 25)
 
+        
 
         self.textLabel = ctk.CTkLabel(self.text_frame, text=content, justify="left", font = self.MESSAGE_FONT,anchor="w")
         self.textLabel.pack(side= tk.LEFT, fill = tk.X, padx = 10, pady = (0,5), anchor = "w", expand = True)

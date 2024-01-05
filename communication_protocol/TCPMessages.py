@@ -1,7 +1,8 @@
 from typing import Dict
 from dataclasses import dataclass
-from datetime import datetime
+from enum import Enum
 
+from datetime import datetime
 
 @dataclass
 class TCPMessage:
@@ -40,14 +41,34 @@ class NewMessageNotif(ClientMessage):
     sender_name: str
 
 @dataclass
-class FriendRequestSent(ClientMessage):
-    time_sent: datetime
+class FriendRequest(ClientMessage):
     username: str
-    
+        
 @dataclass
-class AcceptedFriendRequest(ClientMessage):
-    time_accepted: datetime
-    
+class FriendRequestNotif(ClientMessage):
+    username: str
+    firstname: str
+    lastname: str
+
+@dataclass
+class FriendRequestDecision(ClientMessage):
+    success: bool
+    username: str
+
+@dataclass
+class FriendRemoval(ClientMessage):
+    username: str
+
+@dataclass
+class FriendRemovedNotif(ClientMessage):
+    username: str
+
+@dataclass 
+class FriendStatusNotif(ClientMessage):
+    username: str
+    firstname: str
+    lastname: str
+    decision: str
 
 @dataclass
 class ChannelJoinRequest(ClientMessage):
@@ -74,33 +95,89 @@ class ChannelLeave(ClientMessage):
     channel_id: int
 
 @dataclass
-class UserJoinNotif(ClientMessage):
+class ChannelLeaveNotif(ClientMessage):
     channel_id: int
     username: str
 
 @dataclass
-class UserLeaveNotification(ClientMessage):
+class UserJoinNotif(ClientMessage):
     channel_id: int
-    user_id: int
+    username: str
+    firstname: str
+    lastname: str
+
+@dataclass
+class SearchRequest(ClientMessage):
+    content: str
+
+@dataclass
+class SearchReponse(ClientMessage):
+    response_data: list
 
 #Auth Messages:
 @dataclass
 class AuthMessage(TCPMessage):
-    ip: int
+    pass
 
 @dataclass
 class LoginAttempt(AuthMessage):
     username: str
+    password: str
+
+class LoginError(Enum):
+    USERNAME_NOT_FOUND = 1
+    PASSWORD_INCORRECT = 2
 
 @dataclass
 class LoginResponse(AuthMessage):
     success: bool
+    error_decription: LoginError
     user_id: int
+    username: str
+    firstname: str
+    lastname: str
+    email: str
+    dob: datetime
+    account_created: str
+
 
 @dataclass
 class SignUpAttempt(AuthMessage):
-    pass
+    username: str
+    firstname: str
+    lastname: str
+    email: str
+    password: str
+    dob: datetime
 
+class SignUpError(Enum):
+    USERNAME_TAKEN = 1
+    EMAIL_TAKEN = 2
+
+@dataclass
+class SignUpResponse(AuthMessage):
+    success: bool
+    error_decription: SignUpError
+
+@dataclass
+class EmailVerificationCodeAttempt(AuthMessage):
+    code: str
+    username: str
+    firstname: str
+    lastname: str
+    email: str
+    password: str
+    dob: datetime
+
+@dataclass
+class SignUpConfirmation(AuthMessage):
+    success: bool
+    user_id: int
+
+@dataclass
+class PasswordResetAttempt(AuthMessage):
+    email: str
+    password: str
 
 
 class CodeLookUp:
@@ -112,8 +189,8 @@ class CodeLookUp:
     200: ClientMessage,
     201: TextMessage,
     202: NewMessageNotif,
-    203: FriendRequestSent,
-    204: AcceptedFriendRequest,
+    203: FriendRequest,
+    204: FriendRequestDecision,
     205: ChannelJoinRequest,
     206: ChannelCreateRequest,
     207: ChannelCreateResponse,
@@ -134,8 +211,8 @@ class CodeLookUp:
     ClientMessage: 200,
     TextMessage: 201,
     NewMessageNotif: 202,
-    FriendRequestSent: 203,
-    AcceptedFriendRequest: 204,
+    FriendRequest: 203,
+    FriendRequestDecision: 204,
     ChannelJoinRequest: 205,
     ChannelCreateRequest: 206,
     ChannelCreateResponse: 207,
@@ -147,23 +224,5 @@ class CodeLookUp:
     SignUpAttempt: 303
 
     }
-
-"""
-c, t =  CodeLookUp.TCPMessageClassToMessageCode[TCPMessage], TextMessage(10,32)
-
-
-pickled = pickle.dumps((c, t))
-print(pickled)
-
-# pickled is now a bytes object that contains the pickled representation of data
-print(pickled.__sizeof__())
-print(type(pickled))
-
-
-
-restored = pickle.loads(pickled)
-print(restored)
-"""
-
 
 

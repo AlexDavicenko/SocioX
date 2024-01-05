@@ -19,14 +19,14 @@ class Graph {
 public:
     int size;
     //Node names must be unique
-    unordered_map<Node*, list<pair<Node*, int>>*> edgeMap;
+    unordered_map<Node*, list<pair<Node*, float>>*> edgeMap;
     unordered_map<string, Node*> nodes;
 
     Graph() {
         size = 0;
     }
 
-    void add_node(string nodeName) {
+    void addNode(string nodeName) {
         if (nodes.count(nodeName)) {
             cout << "Node " << nodeName << "Already exists in the graph" << endl;
         }
@@ -37,7 +37,7 @@ public:
 
     }
 
-    void remove_node(string nodeId) {
+    void removeNode(string nodeId) {
 
         if (!nodes.count(nodeId)) {
             cout << "Attempted removal node " << nodeId << " does not exist in graph" << endl;
@@ -48,21 +48,20 @@ public:
 
         //remove edges to and from node
         for (const auto& p : edgeMap) {
+            //Removing edges from node
             if (p.first->id == nodeId) {
                 edgeMap.erase(p.first);
             }
             else {
+                //LAMBDA FUNCTION ??????? (W RIZZ)
+                p.second->remove_if([nodeId](pair<Node*, float> p) {
+                    return p.first->id == nodeId;
+                });
 
-                for (const auto& n : *p.second) {
-                    if (n.first->id == nodeId) {
-                        //O(n^3 time complexity (W rizz))
-                        p.second->remove(n);
-                    }
-                }
             }
         }
     }
-    void remove_edge(string nodeAId, string nodeBId) {
+    void removeEdge(string nodeAId, string nodeBId) {
         //Check for existence
         if (!nodes.count(nodeAId) || !nodes.count(nodeBId)) {
             cout << "The nodes specified do not exist in the graph" << endl;
@@ -71,18 +70,17 @@ public:
         Node* nodeA = nodes[nodeAId];
         //Remove one directional edge
         if (edgeMap.count(nodeA)) {
-            list<pair<Node*, int>>* edgeList = edgeMap[nodeA];
-            for (auto& p : *edgeList) {
-                if (p.first->id == nodeBId) {
-                    edgeList->remove(p);
-                }
-            }
+            list<pair<Node*, float>>* edgeList = edgeMap[nodeA];
+            
+            edgeList->remove_if([nodeBId](pair<Node*, float> p) {
+                return p.first->id == nodeBId;
+            });
         }
 
     }
 
-
-    void add_edge(string nodeAId, string nodeBId, int weight) {
+    //Creates edge between node A and node B or overwrites an existing edge
+    void addEdge(string nodeAId, string nodeBId, float weight) {
 
         //Check for existence
         if (!nodes.count(nodeAId) || !nodes.count(nodeBId)) {
@@ -96,18 +94,17 @@ public:
         //If edge map already contains node A
         if (edgeMap.count(nodeA)) {
 
-            list<pair<Node*, int>>* edgeList = edgeMap[nodeA];
+            list<pair<Node*, float>> *edgeList = edgeMap[nodeA];
 
-            for (auto& p : *edgeList) {
-                if (p.first->id == nodeB->id) {
-                    edgeList->remove(p);
-                }
-            }
+            //Remove edge if one already exists
+            edgeList->remove_if([nodeBId](pair<Node*, float> p) {
+                return p.first->id == nodeBId;
+                });
 
             edgeMap[nodeA]->push_back(make_pair(nodeB, weight));
         }
         else {
-            list<pair<Node*, int>>* edgeList = new list<pair<Node*, int>>();
+            list<pair<Node*, float>>* edgeList = new list<pair<Node*, float>>();
 
             edgeList->push_back(make_pair(nodeB, weight));
 
@@ -118,7 +115,9 @@ public:
     }
 
     //Dijkstra Algorithm to find the closest node
-    string closest_non_friend_node(string startNodeId, unordered_set<string> friendsId) {
+    string closestNonFriendNode(string startNodeId, unordered_set<string> friendsIdSet) {
+
+        friendsIdSet.insert(startNodeId);
 
         //Find node in graph by name
         Node* node = nodes[startNodeId];
@@ -132,65 +131,58 @@ public:
         visitedNodes.insert(node);
 
         //Create distance hash map
-        unordered_map<Node*, int> distances;
+        unordered_map<Node*, float> distances;
         for (auto& it : nodes) {
-            distances[it.second] = INT32_MAX;
+            distances[it.second] = FLT_MAX;
         }
         distances[node] = 0;
 
-        while (!priorityQueue.is_empty()) {
+        while (!priorityQueue.isEmpty()) {
 
             //Get next closest node
             Item top = priorityQueue.pop();
 
             //Unpackage Item from heap
-            int cur_priority = top.priority;
-            Node* cur_node = top.value;
+            int curPriority = top.priority;
+            Node* curNode = top.value;
 
-            if (!friendsId.count(cur_node->id)) {
-                //cout << cur_node->name ;
-                for (auto& it : friendsId) {
-                    //cout << it << endl;
-                }
-
-                return cur_node->id;
+            if (!friendsIdSet.count(curNode->id)) {
+                return curNode->id;
             }
 
             //Mark current node as visited
-            visitedNodes.insert(cur_node);
+            visitedNodes.insert(curNode);
 
-            cout << "\nProcessing Node: " << cur_node->id << endl;
-
-
-            //if edgeMap doesnt contain the node (i.e node has no outgoing edges)
-            if (!edgeMap.count(cur_node)) {
+            //If edgeMap doesnt contain the node (i.e node has no outgoing edges)
+            if (!edgeMap.count(curNode)) {
                 //skip while loop
                 continue;
             }
 
             //Loop over every edge
-            for (auto edge : *edgeMap[cur_node]) {
+            for (auto edge : *edgeMap[curNode]) {
 
-                //Unpackage Item 
-                Node* new_node = edge.first;
-                int weight = edge.second;
+                //Unpackage pair 
+                Node* newNode = edge.first;
+                float weight = edge.second;
 
                 //If new node hasnt been visited
-                if (!visitedNodes.count(new_node)) {
+                if (!visitedNodes.count(newNode)) {
 
                     //Add to the priority queue with higher priority
-                    priorityQueue.insert(Item{ cur_priority + weight, new_node });
+                    priorityQueue.insert(Item{ curPriority + weight, newNode });
                 }
 
                 //Augment shortest distances
-                if (distances[new_node] > cur_priority + weight) {
-                    distances[new_node] = cur_priority + weight;
+                if (distances[newNode] > curPriority + weight) {
+                    distances[newNode] = curPriority + weight;
                 }
             }
         }
 
+        #ifdef DEBUG 
         cout << "No node found" << endl;
-        
+        #endif
         return "";
     }
 
@@ -208,7 +200,7 @@ public:
 
             //If edge map contains node
             if (edgeMap.count(node)) {
-                list<pair<Node*, int>>* edges = edgeMap[node];
+                list<pair<Node*, float>>* edges = edgeMap[node];
 
                 for (auto e = edges->begin(); e != edges->end(); e++) {
                     edgeList.push_back(e->first->id);
@@ -230,16 +222,20 @@ public:
     void loadGraph(string filename) {
 
         list<list<string>> graphData = parseCSV(filename);
-
+       
+        //Empty file
+        if (graphData.size() == 0) {
+            return;
+        }
         list<string> nodeList = graphData.back();
         vector<Node*> nodeVec;
 
 
         //Read over nodes
         for (auto n = nodeList.begin(); n != nodeList.end(); n++) {
-            Node* new_node = new Node{ *n };
-            nodes[*n] = new_node;
-            nodeVec.push_back(new_node);
+            Node* newNode = new Node{ *n };
+            nodes[*n] = newNode;
+            nodeVec.push_back(newNode);
         }
         size = nodeVec.size();
 
@@ -248,17 +244,15 @@ public:
         for (auto l = graphData.begin(); l != prev(graphData.end()); l++) {
 
 
-            list<pair<Node*, int>>* edgeList = new list<pair<Node*, int>>;
+            list<pair<Node*, float>>* edgeList = new list<pair<Node*, float>>;
             for (auto n = (*l).begin(); n != (*l).end(); n++) {
 
-                string node_name = *n;
+                string nodeName = *n;
                 n++;
 
+                float weight = stof(*n);
 
-                //LATER MIGHT BE FLOAT
-                int weight = stoi(*n);
-
-                edgeList->push_back(make_pair(nodes[node_name], weight));
+                edgeList->push_back(make_pair(nodes[nodeName], weight));
             }
             edgeMap[nodeVec[i]] = edgeList;
             i++;
@@ -274,18 +268,39 @@ public:
         return ns;
     }
 
+    list<list<string>> getAllEdges() {
+
+        list<list<string>> edgesList2D;
+        for (const auto& p : edgeMap) {
+            list<string> edgesList;
+
+            Node* n = p.first;
+            list<pair<Node*, float>>* edges = p.second;
+
+            edgesList.push_back(n->id);
+
+            for (const auto& e : *edges) {
+                edgesList.push_back(e.first->id);
+                edgesList.push_back(to_string(e.second));
+            }
+            edgesList2D.push_back(edgesList);
+        }
+        return edgesList2D;
+    }
+
 };
 
 PYBIND11_MODULE(GraphDB, m) {
     py::class_<Graph>(m, "Graph")
         .def(py::init<>())
         .def_readwrite("size", &Graph::size)
-        .def("addNode", &Graph::add_node)
-        .def("addEdge", &Graph::add_edge)
-        .def("removeEdge", &Graph::remove_edge)
-        .def("removeNode", &Graph::remove_node)
+        .def("addNode", &Graph::addNode)
+        .def("addEdge", &Graph::addEdge)
+        .def("removeEdge", &Graph::removeEdge)
+        .def("removeNode", &Graph::removeNode)
         .def("getAllNodes", &Graph::getAllNodes)
-        .def("closest_non_friend_node", &Graph::closest_non_friend_node)
+        .def("getAllEdges", &Graph::getAllEdges)
+        .def("closestNonFriendNode", &Graph::closestNonFriendNode)
         .def("loadGraph", &Graph::loadGraph)
         .def("saveGraph", &Graph::saveGraph);
            
