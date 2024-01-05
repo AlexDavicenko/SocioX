@@ -91,6 +91,7 @@ unsigned long long Encrypt(unsigned int* Pboxes, unsigned int(*Sboxes)[256], uns
         
         L = L ^ Pboxes[i];
 
+    
         //F function
         unsigned long f = F(L, Sboxes);
         R = f ^ R;
