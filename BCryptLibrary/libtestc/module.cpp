@@ -80,6 +80,7 @@ uint64_t Encrypt(uint32_t Pboxes[18], uint32_t Sboxes[4][256], uint64_t block) {
 
         L = L ^ Pboxes[i];
 
+    
         //F function
         uint32_t f = F(L, Sboxes);
         R = f ^ R;
