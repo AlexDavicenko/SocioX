@@ -1,8 +1,5 @@
 import tkinter as tk
 import customtkinter as ctk
-from datetime import datetime
-from typing import List, Dict
-
 
 from controller_protocol import Controller
 from ..window import Window
@@ -23,7 +20,7 @@ class CoreAppEntryPointWindow(Window):
         self.controller = controller
 
         self.left_side_frame = LeftSideFrame(self, controller)
-        self.left_side_frame.grid(row=0, column=0, padx=5, pady=1, sticky="ns")#rowspan = 2
+        self.left_side_frame.grid(row=0, column=0, padx=5, pady=1, sticky="ns")
         self.grid_rowconfigure(0, weight=1)
         
         self.channel_frame = ChannelFrame(self, controller)
@@ -43,7 +40,7 @@ class CoreAppEntryPointWindow(Window):
         self.settings_frame.grid(column = 0, row =1, rowspan = 2,sticky ='nsew', padx = 10, pady = 10)
 
 
-    def window_bindings(self): #Polymorphism
+    def window_bindings(self):
         self.controller.add_binding('<Return>', self.text_bar_frame.send_button_clicked)
         self.controller.add_binding('<KeyRelease>', self.text_bar_frame.on_message_entry_box_modify)
         self.text_bar_frame.window_bindings()
@@ -51,15 +48,3 @@ class CoreAppEntryPointWindow(Window):
     def add_channel(self, channel_id, channel_name):
         self.left_side_frame.add_channel_button_to_side_bar(channel_id, channel_name)
         self.channel_frame.add_channel(channel_id, channel_name)
-    
-
-
-    
-
-
-
-
-
-
-
-

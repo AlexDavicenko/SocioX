@@ -18,13 +18,8 @@ class Client():
         self.close_event = Event()
         
         self.PORT = 8080
-        #172.20.4.155
-        #192.168.0.73
-        #192.168.0.83
-        #172.20.4.155
         self.HOST = "192.168.0.73"
         self.server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #self.server_conn.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 102400)
         self.server_conn.connect((self.HOST, self.PORT))
         self.transmission_handler = TransmissionHandler(self.server_conn, False, self.close_event)
         self.transmission_handler.start()
@@ -60,7 +55,14 @@ class Client():
                             self.controller.recieve_incoming_msg(msg)
                         case LoginResponse():
                             if msg.success:
-                                self.controller.login_approved(msg.user_id, msg.username, msg.firstname, msg.lastname, msg.email, msg.dob, msg.account_created)
+                                self.controller.login_approved(
+                                    msg.user_id,
+                                    msg.username, 
+                                    msg.firstname, 
+                                    msg.lastname, 
+                                    msg.email, 
+                                    msg.dob, 
+                                    msg.account_created)
                             else:
                                 self.controller.login_failed(msg.error_decription)
                         case ChannelCreateResponse():
@@ -78,7 +80,11 @@ class Client():
                         case ChannelLeaveNotif():
                             self.controller.user_left_channel_update(msg.channel_id, msg.username)
                         case UserJoinNotif():
-                            self.controller.user_join_channel_update(msg.channel_id, msg.username, msg.firstname, msg.lastname)
+                            self.controller.user_join_channel_update(
+                                msg.channel_id, 
+                                msg.username, 
+                                msg.firstname, 
+                                msg.lastname)
                         case SearchReponse():
                             self.controller.search_response(msg.response_data)
                         case FriendRequestNotif():
@@ -88,7 +94,11 @@ class Client():
                         case FriendRequestDecision():
                             self.controller.friend_request_decision(msg.username, msg.success)
                         case FriendStatusNotif():
-                            self.controller.friend_status_notif(msg.username, msg.firstname, msg.lastname, msg.decision)
+                            self.controller.friend_status_notif(
+                                msg.username, 
+                                msg.firstname, 
+                                msg.lastname, 
+                                msg.decision)
                         case SignUpResponse():
                             self.controller.signup_response(msg.success, msg.error_decription)
                         case SignUpConfirmation():

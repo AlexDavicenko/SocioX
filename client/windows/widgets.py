@@ -1,9 +1,6 @@
-#https://blog.teclado.com/tkinter-placeholder-entry-field/
-
 import customtkinter as ctk
 import tkinter as tk
 
-#add centered option with string formatting like in the blad guys video
 class PlaceHolderEntry(ctk.CTkEntry):
     def __init__(self, parent: ctk.CTkFrame, placeholder: str, show: str = "", *args, **kwargs) -> None:
         super().__init__(parent, *args, **kwargs)

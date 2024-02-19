@@ -21,10 +21,14 @@ class SearchWindow(Window):
         self.central_search_frame = CentralSearchFrame(self, controller)
         self.central_search_frame.grid(column = 0, row = 0, sticky = 'nsew', columnspan = 3)
 
-        self.back_button = ctk.CTkButton(self, text = 'Back', command = self.back_button_pressed, width= 120, height = 40)
+        self.back_button = ctk.CTkButton(
+            self, text = 'Back', command = self.back_button_pressed, width= 120, height = 40)
         self.back_button.grid(padx = 10, pady = 10, column = 2, row = 1) 
 
-        self.get_suggestions_button = ctk.CTkButton(self, text = 'Generate Suggestions', command = self.get_suggestions_button_pressed, width= 120, height = 40)
+        self.get_suggestions_button = ctk.CTkButton(
+            self, 
+            text = 'Generate Suggestions', 
+            command = self.get_suggestions_button_pressed, width= 120, height = 40)
         self.get_suggestions_button.grid(padx = 10, pady = 10, column = 0, row = 1)
 
     def back_button_pressed(self, e = None):
@@ -46,10 +50,12 @@ class CentralSearchFrame(ctk.CTkFrame):
         self.grid_columnconfigure(1,weight=1)
 
 
-        self.user_search_bar = PlaceHolderEntry(self, placeholder="Start typing a username...", width = 300, height = 40)
+        self.user_search_bar = PlaceHolderEntry(
+            self, placeholder="Start typing a username...", width = 300, height = 40)
         self.user_search_bar.grid(padx = 10, pady = (10,0), column = 0, row = 0, sticky = "e")
 
-        self.search_button = ctk.CTkButton(self, text = 'Search', command = self.search_button_pressed, width= 120, height = 40)
+        self.search_button = ctk.CTkButton(
+            self, text = 'Search', command = self.search_button_pressed, width= 120, height = 40)
         self.search_button.grid(padx = 10, pady = (10,0), column = 1, row = 0,  sticky = "w")
 
         self.results_frame = ResultsFrame(self, controller)
@@ -75,7 +81,10 @@ class ResultsFrame(ctk.CTkScrollableFrame):
             result.pack_forget()
         self.results_list = []
         for result in result_data:
-            user_result_frame = UserResultFrame(self, self.controller, result["Username"], result["Firstname"], result['Lastname'], result["AccountAge"])
+            user_result_frame = UserResultFrame(
+                self, 
+                self.controller, 
+                result["Username"], result["Firstname"], result['Lastname'], result["AccountAge"])
             self.results_list.append(user_result_frame)
             user_result_frame.pack(expand = True, side = "top", fill = 'x', padx = (0,25))
 

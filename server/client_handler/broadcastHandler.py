@@ -1,8 +1,6 @@
 import pickle
 import logging
 import time
-from threading import Event
-from socket import socket
 from controller import Controller
 
 import sys; sys.path.append('../')

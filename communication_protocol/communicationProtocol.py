@@ -36,7 +36,6 @@ def generate_keys_fast(p, q) -> Tuple[int, int]:
     # phi(x) evaluated at N
     phiN = (p-1)*(q-1)
 
-    stime = perf_counter()
     e = 0 
     while True:
         potential_e = randint(2, phiN-1)
@@ -47,18 +46,11 @@ def generate_keys_fast(p, q) -> Tuple[int, int]:
     assert e != 0
 
     public_key = (e, N)    
-    print(f'Time taken (public key): {perf_counter()-stime}')
-
-
-    stime = perf_counter()
-    
-    
+  
     _, _, y = extended_gcd(phiN, e)
-
 
     private_key = (y, N)
 
-    print(f'Time taken(private key): {perf_counter()-stime}')
 
     return public_key, private_key
 
@@ -178,7 +170,6 @@ class TransmissionHandler:
                 p, q = map(int, sample(primes, 2))
                 prod_len = (p * q).bit_length()
                 if prod_len == self.WORD_LENGTH*8:
-                    print("Found primes")
                     return  p, q
 
 

@@ -1,5 +1,3 @@
-from time import perf_counter
-import math
 import random
 import string
 
@@ -80,7 +78,7 @@ def get_2_primes():
 
 for _ in range(10):
     while True:
-        #Ensure that the product of the primes is 2048 bits (pain </3)
+        #Ensure that the product of the primes is 2048 bits
         p, q = get_2_primes()
         prod_len = (p * q).bit_length()
         if prod_len == 2048:

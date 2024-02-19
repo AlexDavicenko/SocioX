@@ -131,7 +131,9 @@ This is your confirmation code: {code}""".strip()
         
         for user in self.dal.get_channel_users(channel_id):
             if user['UserID'] != user_id:
-                self.add_message_by_id(client_id, UserJoinNotif(channel_id, user['Username'], user['Firstname'], user['Lastname']))
+                self.add_message_by_id(
+                    client_id, 
+                    UserJoinNotif(channel_id, user['Username'], user['Firstname'], user['Lastname']))
 
     #Updates the other uses in a channel when a user joins
     def update_users_on_user_join(self, client_id: int, channel_id: int):
@@ -149,7 +151,9 @@ This is your confirmation code: {code}""".strip()
                 #If the user needed to be updated is currently online
                 if user['UserID'] in self.user_id_client_id_map:
                     #Maps user id to client id to be able to send message
-                    self.add_message_by_id(self.user_id_client_id_map[user['UserID']], UserJoinNotif(channel_id, username, firstname, lastname))
+                    self.add_message_by_id(
+                        self.user_id_client_id_map[user['UserID']],
+                        UserJoinNotif(channel_id, username, firstname, lastname))
 
     def update_user_on_friend_status(self, client_id: int, user_id: int):
 

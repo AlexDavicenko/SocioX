@@ -1,7 +1,5 @@
 import customtkinter as ctk
-import tkinter as tk
-import logging
-from threading import Thread
+import re
 
 from CTkMessagebox import CTkMessagebox
 from copy import copy
@@ -58,7 +56,6 @@ class Controller:
         self.root_container = ctk.CTkFrame(self.root) 
         self.frames: Dict[str, Window] = {} 
         
-        #TODO: Solve with enums
         for FrameClass in (
             LoginWindow,
             SignUpWindow, 
@@ -114,7 +111,11 @@ class Controller:
 
     def add_message(self, content: str) -> None:
         if self.current_channel_id:
-            self.core_app.channel_frame.add_message(self.current_channel_id, self.username, datetime.now(), content)
+            self.core_app.channel_frame.add_message(
+                self.current_channel_id,
+                self.username,
+                datetime.now(),
+                content)
             self.outgoing_msgs.append(
                 TextMessage(self.current_channel_id, content)
             )
@@ -163,10 +164,6 @@ class Controller:
                 channel_id=channel_id
                 )
             )
-        else:
-            print("Channel already added")
-            # TODO: Tell core app that the channel has already been joined
-            pass
 
     def create_channel(self, channel_id: int, channel_name: str):
         self.add_channel_window.central_frame.create_channel_frame.channel_name_entry_box.clear()
@@ -324,23 +321,43 @@ class Controller:
         self.email = detail_entry_frame.top_entry_frame.email_entry_box.get()
         self.password = detail_entry_frame.top_entry_frame.password_entry_box.get()
         self.dob = datetime(year, month, day)
-        self.account_created = "Account Created: Just Now"
-        self.outgoing_msgs.append(
-            SignUpAttempt(
-                username = self.username,
-                firstname = self.firstname,
-                lastname = self.lastname,
-                email = self.email,
-                password = self.password,
-                dob = self.dob
-            )
-        )
-        
+        self.account_created = "Account created: Just now"
         self.core_app.username = self.username
+
+
+        #Validate email
+        if not re.match(r'\S+@\S+\.[a-zA-Z]{2,}', self.email):
+            CTkMessagebox(
+                title = "Sign up error", 
+                message= """The email you have entered has an invalid format""",
+                icon="cancel"
+                )
+        #Validate password
+        elif not re.match(r'(?=\S*[a-z])(?=\S*[A-Z])(?=\S*[0-9]).\S{8,}', self.password):
+            CTkMessagebox(
+                title = "Sign up error", 
+                message= """Your password must be:
+                - At least 8 characters
+                - Contain upper case digits
+                - Contain lower case digits
+                - Contain numbers""",
+                icon="cancel"
+                )
+        else:
+            self.outgoing_msgs.append(
+                SignUpAttempt(
+                    username = self.username,
+                    firstname = self.firstname,
+                    lastname = self.lastname,
+                    email = self.email,
+                    password = self.password,
+                    dob = self.dob
+                )
+            )
+        
 
     def signup_response(self, success: str, error: SignUpError) -> None:
         if success:
-            #changed
             self.email_verification_window.set_email(self.email)
             self.switch_frame(WindowTypes.EmailVerificationWindow)
         else:
@@ -395,8 +412,3 @@ class Controller:
 
     def on_suggestion_press(self, suggestionNo):
         self.core_app.text_bar_frame.on_suggestion_press(suggestionNo=suggestionNo)
-
-    # //// Other ////
-
-    def close(self) -> None:
-        pass 

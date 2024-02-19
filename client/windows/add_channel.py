@@ -1,7 +1,6 @@
 
 
 import customtkinter as ctk
-import tkinter as tk
 
 from .widgets import PlaceHolderEntry
 from .window import Window
@@ -24,15 +23,18 @@ class CentralFrame(ctk.CTkFrame):
         self.controller = controller
 
         self.join_channel_frame = JoinChannelFrame(self, controller)
-        self.join_channel_frame.grid(column = 0, row = 0, sticky = '', pady = (100,40), columnspan = 2)
+        self.join_channel_frame.grid(
+            column = 0, row = 0, sticky = '', pady = (100,40), columnspan = 2)
 
         self.create_channel_frame = CreateChannelFrame(self, controller)
-        self.create_channel_frame.grid(column = 0, row = 1, sticky = 'n', pady = (20,20), columnspan = 2)
+        self.create_channel_frame.grid(
+            column = 0, row = 1, sticky = 'n', pady = (20,20), columnspan = 2)
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
 
-        self.back_button = ctk.CTkButton(self, text = 'Back', command = self.back_button_pressed, width= 120, height = 40)
+        self.back_button = ctk.CTkButton(
+            self, text = 'Back', command = self.back_button_pressed, width= 120, height = 40)
         self.back_button.grid(column = 1, row = 2, padx = 15, pady = 15)
 
     def back_button_pressed(self, e = None):
@@ -45,14 +47,20 @@ class JoinChannelFrame(ctk.CTkFrame):
         super().__init__(parent, fg_color=['gray86', 'gray17'])
         self.controller = controller
 
-        self.join_channel_label = ctk.CTkLabel(self, text = 'Enter a channel ID to join a channel', font=('TkDefaultFont', 16))
+        self.join_channel_label = ctk.CTkLabel(
+            self, text = 'Enter a channel ID to join a channel', font=('TkDefaultFont', 16))
         self.join_channel_label.grid(row = 0, column = 0, sticky = 'nw', pady = (0, 35))
 
 
-        self.channel_id_entry_box = PlaceHolderEntry(self, "Channel ID", width = 450, height = 50, font=('TkDefaultFont', 16))
+        self.channel_id_entry_box = PlaceHolderEntry(
+            self, "Channel ID", width = 450, height = 50, font=('TkDefaultFont', 16))
         self.channel_id_entry_box.grid(row = 1, column = 0)
 
-        self.channel_id_submit_button = ctk.CTkButton(self, text='Join', command = self.channel_id_submit_button_clicked, width = 120, height = 50, font=('TkDefaultFont', 16))
+        self.channel_id_submit_button = ctk.CTkButton(
+            self,
+            text='Join', 
+            command = self.channel_id_submit_button_clicked, 
+            width = 120, height = 50, font=('TkDefaultFont', 16))
         self.channel_id_submit_button.grid(row = 1, column = 1, padx = (50,20))
 
     def channel_id_submit_button_clicked(self, e = None):
@@ -68,13 +76,19 @@ class CreateChannelFrame(ctk.CTkFrame):
         super().__init__(parent, fg_color=['gray86', 'gray17'])
 
         self.controller = controller
-        self.join_channel_label = ctk.CTkLabel(self, text = 'Create your own channel', font=('TkDefaultFont', 16))
+        self.join_channel_label = ctk.CTkLabel(
+            self, text = 'Create your own channel', font=('TkDefaultFont', 16))
         self.join_channel_label.grid(row = 0, column = 0, sticky = 'nw', pady = (0,35))
 
-        self.channel_name_entry_box = PlaceHolderEntry(self, "Channel Name", width = 450, height = 50, font=('TkDefaultFont', 16))
+        self.channel_name_entry_box = PlaceHolderEntry(
+            self, "Channel Name", width = 450, height = 50, font=('TkDefaultFont', 16))
         self.channel_name_entry_box.grid(row = 1, column = 0)
 
-        self.channel_create_button = ctk.CTkButton(self, text='Create',  command = self.channel_name_submit_button_clicked, width = 120, height = 50, font=('TkDefaultFont', 16))
+        self.channel_create_button = ctk.CTkButton(
+            self, 
+            text='Create', 
+            command = self.channel_name_submit_button_clicked, 
+            width = 120, height = 50, font=('TkDefaultFont', 16))
         self.channel_create_button.grid(row = 1, column = 1, padx = (50,20))
 
     def channel_name_submit_button_clicked(self, e = None):

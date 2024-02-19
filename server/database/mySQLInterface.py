@@ -1,5 +1,4 @@
 import os
-import logging
 
 import mysql.connector
 import mysql.connector.errorcode
@@ -54,12 +53,30 @@ class MySQLConnection:
         print(f"Creating table {table_name}")
         self.__execute_query(table_description)
 
-    def add_user(self, username: str, firstname: str, lastname: str, email: str, password_hash: str, password_salt: str, region: Region, date_of_birth: datetime):
+    def add_user(
+            self, 
+            username: str, 
+            firstname: str, 
+            lastname: str, 
+            email: str, 
+            password_hash: str, 
+            salt: str, 
+            region: Region, 
+            date_of_birth: datetime):
         self.__execute_query(
             f"""
-            INSERT INTO Users (Username, Firstname, Lastname, Email, PasswordHash, PasswordSalt, Region, DateOfBirth, DateAccountCreated)
+            INSERT INTO Users 
+            (Username, Firstname, Lastname, Email, PasswordHash, PasswordSalt, Region, DateOfBirth, DateAccountCreated)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, username, firstname, lastname, email, password_hash, password_salt, region.name, self.convert_datetime_format(date_of_birth), self.convert_datetime_format(datetime.now())
+            """, username,
+            firstname, 
+            lastname, 
+            email, 
+            password_hash, 
+            salt, 
+            region.name, 
+            self.convert_datetime_format(date_of_birth), 
+            self.convert_datetime_format(datetime.now())
         )
 
     def get_user_salt(self, user_id: str) -> str:

@@ -29,7 +29,8 @@ class SettingWindow(Window):
         self.friend_list_frame = FriendListFrame(self, controller)
         self.friend_list_frame.grid(padx = 10, pady = 10, column = 0, row = 3, columnspan = 2, sticky = "nsew")
 
-        self.back_button = ctk.CTkButton(self, text = 'Back', command = self.back_button_pressed, width= 120, height = 40)
+        self.back_button = ctk.CTkButton(
+            self, text = 'Back', command = self.back_button_pressed, width= 120, height = 40)
         self.back_button.grid(padx = 10, pady = 10, column = 1, row = 4) 
 
     def back_button_pressed(self, e = None):
@@ -88,7 +89,10 @@ class FriendListFrame(ctk.CTkScrollableFrame):
                 decision_frame.update(decision)
 
 class FriendDecisionFrame(ctk.CTkFrame): 
-    def __init__(self, parent: FriendListFrame, controller: Controller, username: str, firstname: str, lastname: str, decision: str):
+    def __init__(self, 
+                parent: FriendListFrame, 
+                controller: Controller, 
+                username: str, firstname: str, lastname: str, decision: str):
         super().__init__(parent, fg_color=['gray86', 'gray17'])
 
         self.parent = parent    
@@ -139,7 +143,8 @@ class FriendDecisionFrame(ctk.CTkFrame):
                 )
 
         elif decision == "Pending":
-            self.decision_button = ctk.CTkButton(self, text="Pending", height = 35, width = 80, state = "off")
+            self.decision_button = ctk.CTkButton(
+                self, text="Pending", height = 35, width = 80, state = "off")
             
         elif decision == "Remove":
             self.decision_button = ctk.CTkButton(self, 

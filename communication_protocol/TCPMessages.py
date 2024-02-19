@@ -1,4 +1,3 @@
-from typing import Dict
 from dataclasses import dataclass
 from enum import Enum
 
@@ -8,20 +7,6 @@ from datetime import datetime
 class TCPMessage:
     pass
  
-#Connection Messages:
-
-@dataclass
-class ConnectionMessage(TCPMessage):
-    status: bool
-
-@dataclass
-class ConnectionEstablished(ConnectionMessage):
-    pass
-
-@dataclass
-class ConnectionClosed(ConnectionMessage):
-    pass
-
 #Client Messages:
 
 @dataclass
@@ -180,49 +165,5 @@ class PasswordResetAttempt(AuthMessage):
     password: str
 
 
-class CodeLookUp:
-    MessageCodeToTCPMessageClass: Dict[int, TCPMessage] = {
-    0: TCPMessage,
-    101: ConnectionMessage,
-    102: ConnectionEstablished,
-    103: ConnectionClosed,
-    200: ClientMessage,
-    201: TextMessage,
-    202: NewMessageNotif,
-    203: FriendRequest,
-    204: FriendRequestDecision,
-    205: ChannelJoinRequest,
-    206: ChannelCreateRequest,
-    207: ChannelCreateResponse,
-    208: ChannelJoinResponse,
-    209: UserJoinNotif,
-    300: AuthMessage,
-    301: LoginAttempt,
-    302: LoginResponse,
-    303: SignUpAttempt
-
-    }
-
-    TCPMessageClassToMessageCode: Dict[TCPMessage, int] = {
-    TCPMessage: 0,
-    ConnectionMessage: 101,
-    ConnectionEstablished: 102,
-    ConnectionClosed: 103,
-    ClientMessage: 200,
-    TextMessage: 201,
-    NewMessageNotif: 202,
-    FriendRequest: 203,
-    FriendRequestDecision: 204,
-    ChannelJoinRequest: 205,
-    ChannelCreateRequest: 206,
-    ChannelCreateResponse: 207,
-    ChannelJoinResponse: 208,
-    UserJoinNotif: 209,
-    AuthMessage: 300,
-    LoginAttempt: 301,
-    LoginResponse: 302,
-    SignUpAttempt: 303
-
-    }
 
 

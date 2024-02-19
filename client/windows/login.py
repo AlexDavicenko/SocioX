@@ -83,7 +83,12 @@ class UpperFrame(ctk.CTkFrame):
         self.input_boxes_frame.grid(padx = 10, pady = 10, column = 0, row = 1)
         frame = ctk.CTkFrame(self, fg_color=['gray86', 'gray17'])
 
-        self.login_button = ctk.CTkButton(frame, text = "Login", width = 330, font=('TkDefaultFont', 24), height = 50, command = master.login_button_clicked)
+        self.login_button = ctk.CTkButton(
+            frame,
+            text = "Login", 
+            width = 330, 
+            font=('TkDefaultFont', 24), 
+            height = 50, command = master.login_button_clicked)
         self.login_button.pack(anchor='n', side = 'top')
 
         frame.grid(sticky= 'ns', column = 0, row = 2)
@@ -92,7 +97,8 @@ class InputBoxesFrame(ctk.CTkFrame):
     def __init__(self, parent: UpperFrame, master: LoginWindow):
         super().__init__(parent, fg_color=['gray86', 'gray17'])
         
-        self.username_entry_box = PlaceHolderEntry(self, "Enter username", font=('TkDefaultFont', 16), width = 330, height = 45)
+        self.username_entry_box = PlaceHolderEntry(
+            self, "Enter username", font=('TkDefaultFont', 16), width = 330, height = 45)
         self.username_entry_box.pack(padx = 10, pady = 10)
 
         self.password_input_frame = PasswordInputFrame(self, master)
@@ -104,8 +110,10 @@ class PasswordInputFrame(ctk.CTkFrame):
     def __init__(self, parent: InputBoxesFrame, master: LoginWindow):
         super().__init__(parent, fg_color=['gray86', 'gray17'])
         
-        self.password_entry_box = PlaceHolderEntry(self, "Enter password", show = "*", font=('TkDefaultFont', 16), width = 330, height = 45)
-        self.show_password_button = ctk.CTkButton(self, text = "Show", command=master.show_password_button_clicked, width = 70, height = 30)
+        self.password_entry_box = PlaceHolderEntry(
+            self, "Enter password", show = "*", font=('TkDefaultFont', 16), width = 330, height = 45)
+        self.show_password_button = ctk.CTkButton(
+            self, text = "Show", command=master.show_password_button_clicked, width = 70, height = 30)
         
         self.password_entry_box.grid(padx = 10, pady = 0, column = 0, row = 0, columnspan= 2)
         self.show_password_button.grid(padx = 10, sticky = 'w', pady = 10, column = 0, row = 1)

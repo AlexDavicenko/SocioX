@@ -26,7 +26,10 @@ class LeftSideFrame(ctk.CTkScrollableFrame):
 
 class ChannelButton(ctk.CTkButton):
     def __init__(self, master, controller: Controller, channel_id: int, channel_name: str):
-        super().__init__(master, text = channel_name, command=self.switch_channel_button_clicked, width = 100, height = 25)
+        super().__init__(
+            master, 
+            text = channel_name, 
+            command=self.switch_channel_button_clicked, width = 100, height = 25)
         self.controller = controller
         self.channel_id = channel_id
         self.channel_name = channel_name

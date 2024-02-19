@@ -1,7 +1,6 @@
 
 from GraphDB import Graph
 
-from typing import TypeVar, List, Dict, Any
 from types import TracebackType
 
 class GraphDBConnection:

@@ -1,6 +1,5 @@
 from datetime import datetime
 from math import tanh
-import logging
 import os
 
 from bcryptCPP import bcrypt, generate_random_salt
@@ -17,13 +16,13 @@ class DataAccessLayer:
         self.gdb_name = gdb_name
         
    
-    def add_user(self, username: str, firstname: str, lastname: str, email: str, password: str, date_of_birth: datetime) -> None:
+    def add_user(self, username: str, firstname: str, lastname: str, email: str, password: str, dob: datetime):
         with MySQLConnection(self.db_name) as db:
             pepper = os.environ.get("SocioXPepper", "")
             salt = generate_random_salt() 
 
             password_hash = bcrypt(password + pepper, salt, 8)
-            db.add_user(username, firstname, lastname, email, password_hash, salt, Region.EUROPE, date_of_birth)
+            db.add_user(username, firstname, lastname, email, password_hash, salt, Region.EUROPE, dob)
         with GraphDBConnection(self.gdb_name) as gdb:
             gdb.addUser(username)
 

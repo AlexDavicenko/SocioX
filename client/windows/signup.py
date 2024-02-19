@@ -53,13 +53,19 @@ class TopEntryFrame(ctk.CTkFrame):
         self.password_shown = False
 
         
-        self.username_entry_box = PlaceHolderEntry(self, "Username", font=('TkDefaultFont', 16), width = 330, height = 45)   
-        self.firstname_entry_box = PlaceHolderEntry(self, "First name", font=('TkDefaultFont', 16), width = 330, height = 45)
-        self.lastname_entry_box = PlaceHolderEntry(self, "Last name", font=('TkDefaultFont', 16), width = 330, height = 45)
+        self.username_entry_box = PlaceHolderEntry(
+            self, "Username", font=('TkDefaultFont', 16), width = 330, height = 45)   
+        self.firstname_entry_box = PlaceHolderEntry(
+            self, "First name", font=('TkDefaultFont', 16), width = 330, height = 45)
+        self.lastname_entry_box = PlaceHolderEntry(
+            self, "Last name", font=('TkDefaultFont', 16), width = 330, height = 45)
         
-        self.email_entry_box = PlaceHolderEntry(self, "Email", font=('TkDefaultFont', 16), width = 330, height = 45)
-        self.password_entry_box = PlaceHolderEntry(self, "Enter password", show = "*", font=('TkDefaultFont', 16), width = 330, height = 45)
-        self.password_repeat_entry_box = PlaceHolderEntry(self, "Repeat password", show = "*", font=('TkDefaultFont', 16), width = 330, height = 45)
+        self.email_entry_box = PlaceHolderEntry(
+            self, "Email", font=('TkDefaultFont', 16), width = 330, height = 45)
+        self.password_entry_box = PlaceHolderEntry(
+            self, "Enter password", show = "*", font=('TkDefaultFont', 16), width = 330, height = 45)
+        self.password_repeat_entry_box = PlaceHolderEntry(
+            self, "Repeat password", show = "*", font=('TkDefaultFont', 16), width = 330, height = 45)
         
 
         self.username_entry_box.pack(pady= (0,5))
@@ -95,8 +101,10 @@ class DateEntryFrame(ctk.CTkFrame):
         self.month_option_menu = ctk.CTkOptionMenu(self, values = self.MONTHS)
         self.month_option_menu.set('January')
         
-        self.day_entry_box = PlaceHolderEntry(self, "Day", font=('TkDefaultFont', 16), width = 80, height = 30)
-        self.year_entry_box = PlaceHolderEntry(self, "Year", font=('TkDefaultFont', 16), width = 80, height = 30)
+        self.day_entry_box = PlaceHolderEntry(
+            self, "Day", font=('TkDefaultFont', 16), width = 80, height = 30)
+        self.year_entry_box = PlaceHolderEntry(
+            self, "Year", font=('TkDefaultFont', 16), width = 80, height = 30)
 
         self.day_entry_box.pack(side="left", padx = (0,10))
         self.month_option_menu.pack(side="left", padx = (0,10))
@@ -111,8 +119,10 @@ class SignUpFrame(ctk.CTkFrame):
         self.controller = controller
         
         self.tos_var = ctk.StringVar(value=False)
-        self.tos_checkbox = ctk.CTkCheckBox(self, text="I agree with the terms of service", variable=self.tos_var, onvalue=True, offvalue=False)
-        self.signup_button = ctk.CTkButton(self, text= "Sign up", command = self.signup_button_clicked)
+        self.tos_checkbox = ctk.CTkCheckBox(
+            self, text="I agree with the terms of service", variable=self.tos_var, onvalue=True, offvalue=False)
+        self.signup_button = ctk.CTkButton(
+            self, text= "Sign up", command = self.signup_button_clicked)
 
         self.tos_checkbox.pack(side="left", padx = (0,10))
         self.signup_button.pack(side="right")
@@ -123,13 +133,16 @@ class SignUpFrame(ctk.CTkFrame):
         pass_entry2 = self.parent.top_entry_frame.password_repeat_entry_box.get()
         
         if pass_entry1 == "":
-            CTkMessagebox(title = "Invalid password", message= "Please enter a password", icon="cancel")
+            CTkMessagebox(
+                title = "Invalid password", message= "Please enter a password", icon="cancel")
             return
         if pass_entry1 != pass_entry2:
-            CTkMessagebox(title = "Invalid password", message= "Passwords do not match", icon="cancel")
+            CTkMessagebox(
+                title = "Invalid password", message= "Passwords do not match", icon="cancel")
             return
         if not self.parent.signup_frame.tos_checkbox.get():
-            CTkMessagebox(title = "Terms of service", message= "Please agree to the terms of service", icon="cancel")
+            CTkMessagebox(
+                title = "Terms of service", message= "Please agree to the terms of service", icon="cancel")
             return
         
         self.controller.signup_request()
@@ -142,7 +155,8 @@ class BottomFrame(ctk.CTkFrame):
 
         self.parent = parent    
         self.controller = controller
-        self.back_button = ctk.CTkButton(self, text = "Back", command=self.back_button_clicked, width= 120, height = 40)
+        self.back_button = ctk.CTkButton(
+            self, text = "Back", command=self.back_button_clicked, width= 120, height = 40)
         self.back_button.pack(side = "right", padx = 10, pady = 10)
 
     

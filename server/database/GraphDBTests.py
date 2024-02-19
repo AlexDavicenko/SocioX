@@ -4,7 +4,14 @@ TEST_DB_NAME = "graphdbtest.csv"
 
 def run_tests():
     print("\t---RUNNING ALL TESTS---")
-    for test in [add_node_test, add_edge_test, save_graph_test, load_graph_test, remove_node_test, remove_edge_test, get_user_suggestions_test]:
+    for test in [
+        add_node_test,
+        add_edge_test, 
+        save_graph_test, 
+        load_graph_test, 
+        remove_node_test, 
+        remove_edge_test, 
+        get_user_suggestions_test]:
 
         print(f"Running: [{test.__name__}]")
         if test():

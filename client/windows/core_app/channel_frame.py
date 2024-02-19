@@ -49,7 +49,9 @@ class ChannelFrame(ctk.CTkFrame):
             self.current_channel_frame.pack_forget()
         self.current_channel_frame = channel_frame
 
-        self.header_label.configure(text =f"Your Name: { self.controller.username} {' '*20} Channel name: {channel_frame.channel_name} {' '*20} Channel ID: {channel_id}")
+        self.header_label.configure(
+            text =
+f"Your Name: { self.controller.username} {' '*20} Channel name: {channel_frame.channel_name} {' '*20} Channel ID: {channel_id}")
         channel_frame.pack_all()
         channel_frame.pack(expand = True, fill = 'both')
         channel_frame.tkraise()
@@ -83,7 +85,8 @@ class MessagesFrame(ctk.CTkScrollableFrame):
                 firstname = user[1]
                 lastname = user[2]
 
-        message_frame = MessageFrame(self, self.controller, username, firstname, lastname, time_sent.strftime('%H:%M:%S'), content)
+        message_frame = MessageFrame(
+            self, self.controller, username, firstname, lastname, time_sent.strftime('%H:%M:%S'), content)
         if self.channel_id == self.controller.current_channel_id:
             message_frame.pack(expand = True, fill = ctk.X, pady = (10,10))
         self.messages.append(message_frame)
@@ -99,7 +102,11 @@ class MessagesFrame(ctk.CTkScrollableFrame):
 
 
 class MessageFrame(ctk.CTkFrame):
-    def __init__(self, master, controller: Controller, username: str, firstname: str, lastname: str, time: str, content: str ):
+    def __init__(
+            self, 
+            master, 
+            controller: Controller, 
+            username: str, firstname: str, lastname: str, time: str, content: str):
         super().__init__(master, border_color = "gray", border_width= 1)
 
         self.USERNAME_FONT = ctk.CTkFont('Helvetica', 16, 'bold')
